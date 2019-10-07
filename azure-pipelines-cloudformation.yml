@@ -41,7 +41,7 @@ jobs:
   ##-----------------------------------------------------------------------------
   # Setup
   - script: |
-      CID_URL_LATEST="$(curl -s https://api.github.com/repos/AutomateTheCloud/cid/releases/latest | grep "browser_download_url.*tgz" | cut -d : -f 2,3 | tr -d \" | awk '{$1=$1};1')"
+      CID_URL_LATEST="$(curl -s https://api.github.com/repos/AutomateTheCloud/atc-cid/releases/latest | grep "browser_download_url.*tgz" | cut -d : -f 2,3 | tr -d \" | awk '{$1=$1};1')"
       sudo mkdir -p /opt/cid
       curl -L ${CID_URL_LATEST} | sudo tar zxf - -C /opt/cid
       sudo bash /opt/cid/scripts/utility/install.sh -d /usr/local/sbin/
