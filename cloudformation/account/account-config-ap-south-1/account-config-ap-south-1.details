@@ -1,0 +1,16 @@
+[stack_name]=account-config-ap-south-1
+[stack_description]=Account - Config - ap-south-1
+[deployment_timeout]=45
+[account_name]=AutomateTheCloud
+[account_abbr]=atc
+[account_number]=480685085376
+[organization_name]=Account
+[organization_abbr]=account
+[region]=ap-south-1
+[environment]=global
+[project_name]=Account
+[project_abbr]=account
+[function_name]=Config ap-south-1
+[function_abbr]=config-ap-south-1
+[owner]=David Singer
+[contact]=aws-ops@automatethe.cloud

@@ -1,0 +1,308 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Account - Compliance - us-east-1"
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Account
+  ##---------------------------------------------------------------------------------------
+  Account:
+    Description: "Details: Account (AccountName | AccountAbbr | AccountNumber)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Function
+  ##---------------------------------------------------------------------------------------
+  Function:
+    Description: "Details: Function (FunctionName | FunctionAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: Last Update"
+    Type: String
+    Default: 0
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Organization
+  ##---------------------------------------------------------------------------------------
+  Organization:
+    Description: "Details: Organization (OrganizationName | OrganizationAbbr | region | environment)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner (Owner | Contact)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Project
+  ##---------------------------------------------------------------------------------------
+  Project:
+    Description: "Details: Project (ProjectName | ProjectAbbr)"
+    Type: String
+
+##-------------------------------------------------------------------------------------------------
+Resources:
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSCMKBackingKeyRotationEnabled
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 2.8: Ensure rotation for customer created CMKs is enabled
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSCMKBackingKeyRotationEnabled:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-cmk-backing-key-rotation-enabled"
+      Description: "Checks that key rotation is enabled for each key and matches to the key ID of the customer created customer master key (CMK)"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: AWS
+        SourceIdentifier: "CMK_BACKING_KEY_ROTATION_ENABLED"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSEC2VolumeInuseCheck
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSEC2VolumeInuseCheck:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-ec2-volume-inuse-check"
+      Description: "Checks whether EBS volumes are attached to EC2 instances"
+      Scope:
+        ComplianceResourceTypes:
+          - 'AWS::EC2::Volume'
+      Source:
+        Owner: AWS
+        SourceIdentifier: "EC2_VOLUME_INUSE_CHECK"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSEFSEncryptedCheck
+  # notes:
+  #   - CIS Amazon Web Services Three-tier Web
+  #     - 1.5: Ensure all EBS volumes for Web-Tier are encrypted
+  #     - 1.6: Ensure all EBS volumes for App-Tier are encrypted
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSEFSEncryptedCheck:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-efs-encrypted-check"
+      Description: "Checks whether Amazon EFS are configured to encrypt file data using AWS KMS"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: AWS
+        SourceIdentifier: "EFS_ENCRYPTED_CHECK"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSEIPAttached
+  # notes:
+  #   - CIS Amazon Web Services Three-tier Web
+  #     - 5.12: Ensure an AWS Managed Config Rule for EIPs attached to EC2 instances within VPC
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSEIPAttached:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-eip-attached"
+      Description: "Checks whether all EIP addresses allocated to a VPC are attached to EC2 instances or in-use ENIs"
+      Scope:
+        ComplianceResourceTypes:
+          - 'AWS::EC2::EIP'
+      Source:
+        Owner: AWS
+        SourceIdentifier: "EIP_ATTACHED"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSELBLoggingEnabled
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSELBLoggingEnabled:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-elb-logging-enabled"
+      Description: "Checks whether the Application Load Balancers and the Classic Load Balancers have logging enabled"
+      Scope:
+        ComplianceResourceTypes:
+          - "AWS::ElasticLoadBalancing::LoadBalancer"
+          - "AWS::ElasticLoadBalancingV2::LoadBalancer"
+      Source:
+        Owner: AWS
+        SourceIdentifier: "ELB_LOGGING_ENABLED"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSIncomingSSHDisabled
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 4.1: Ensure no security groups allow ingress from 0.0.0.0/0 to port 22
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSIncomingSSHDisabled:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-incoming-ssh-disabled"
+      Description: "Checks whether security groups that are in use disallow unrestricted incoming SSH traffic"
+      Scope:
+        ComplianceResourceTypes:
+          - 'AWS::EC2::SecurityGroup'
+      Source:
+        Owner: AWS
+        SourceIdentifier: "INCOMING_SSH_DISABLED"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSInstancesInVPC
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSInstancesInVPC:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-instances-in-vpc"
+      Description: "Checks whether your EC2 instances belong to a virtual private cloud (VPC)"
+      Scope:
+        ComplianceResourceTypes:
+          - 'AWS::EC2::Instance'
+      Source:
+        Owner: AWS
+        SourceIdentifier: "INSTANCES_IN_VPC"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSRestrictedIncomingTraffic
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 4.2: Ensure no security groups allow ingress from 0.0.0.0/0 to port 3389
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSRestrictedIncomingTraffic:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-restricted-incoming-traffic"
+      Description: "Checks whether security groups that are in use disallow unrestricted incoming TCP traffic to the specified ports"
+      Scope:
+        ComplianceResourceTypes:
+          - 'AWS::EC2::SecurityGroup'
+      Source:
+        Owner: AWS
+        SourceIdentifier: "RESTRICTED_INCOMING_TRAFFIC"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSVPCDefaultSecurityGroupClosed
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 4.3: Ensure the default security group of every VPC restricts all traffic
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSVPCDefaultSecurityGroupClosed:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-vpc-default-security-group-closed"
+      Description: "Checks that the default security group of any Amazon Virtual Private Cloud‎ (VPC) does not allow inbound or outbound traffic"
+      Scope:
+        ComplianceResourceTypes:
+          - 'AWS::EC2::SecurityGroup'
+      Source:
+        Owner: AWS
+        SourceIdentifier: "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSVPCFlowLogsEnabled
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 2.9: Ensure VPC flow logging is enabled in all VPCs
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSVPCFlowLogsEnabled:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-vpc-flow-logs-enabled"
+      Description: "Checks whether Amazon Virtual Private Cloud flow logs are found and enabled for Amazon VPC"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: AWS
+        SourceIdentifier: "VPC_FLOW_LOGS_ENABLED"
+
+##-------------------------------------------------------------------------------------------------
+Outputs:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Contact
+  ##---------------------------------------------------------------------------------------
+  Contact:
+    Description: "Details: Contact"
+    Value: !Select [1, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Contact"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Environment
+  ##---------------------------------------------------------------------------------------
+  Environment:
+    Description: "Details: Environment"
+    Value: !Select [3, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Environment"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionAbbr
+  ##---------------------------------------------------------------------------------------
+  FunctionAbbr:
+    Description: "Details: FunctionAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionName
+  ##---------------------------------------------------------------------------------------
+  FunctionName:
+    Description: "Details: FunctionName"
+    Value: !Select [0, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: LastUpdate"
+    Value: !Ref "LastUpdate"
+    Export:
+      Name: !Sub "${AWS::StackName}-LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationAbbr
+  ##---------------------------------------------------------------------------------------
+  OrganizationAbbr:
+    Description: "Details: OrganizationAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationName
+  ##---------------------------------------------------------------------------------------
+  OrganizationName:
+    Description: "Details: OrganizationName"
+    Value: !Select [0, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner"
+    Value: !Select [0, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Owner"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectAbbr
+  ##---------------------------------------------------------------------------------------
+  ProjectAbbr:
+    Description: "Details: ProjectAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectName
+  ##---------------------------------------------------------------------------------------
+  ProjectName:
+    Description: "Details: ProjectName"
+    Value: !Select [0, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectName"
+

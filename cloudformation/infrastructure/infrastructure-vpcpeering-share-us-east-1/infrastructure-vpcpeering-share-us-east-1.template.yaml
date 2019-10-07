@@ -1,0 +1,1382 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Infrastructure - VPC Peering: Shared Services - us-east-1"
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Account
+  ##---------------------------------------------------------------------------------------
+  Account:
+    Description: "Details: Account (AccountName | AccountAbbr | AccountNumber)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Function
+  ##---------------------------------------------------------------------------------------
+  Function:
+    Description: "Details: Function (FunctionName | FunctionAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: Last Update"
+    Type: String
+    Default: 0
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Organization
+  ##---------------------------------------------------------------------------------------
+  Organization:
+    Description: "Details: Organization (OrganizationName | OrganizationAbbr | region | environment)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner (Owner | Contact)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Project
+  ##---------------------------------------------------------------------------------------
+  Project:
+    Description: "Details: Project (ProjectName | ProjectAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: StackReference/StackReferenceSource
+  ##---------------------------------------------------------------------------------------
+  StackReferenceSource:
+    Description: "Stack Reference: Source"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: StackReference/StackReferenceTarget10
+  ##---------------------------------------------------------------------------------------
+  StackReferenceTarget10:
+    Description: "Stack Reference: Target10"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: StackReference/StackReferenceTarget1
+  ##---------------------------------------------------------------------------------------
+  StackReferenceTarget1:
+    Description: "Stack Reference: Target1"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: StackReference/StackReferenceTarget2
+  ##---------------------------------------------------------------------------------------
+  StackReferenceTarget2:
+    Description: "Stack Reference: Target2"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: StackReference/StackReferenceTarget3
+  ##---------------------------------------------------------------------------------------
+  StackReferenceTarget3:
+    Description: "Stack Reference: Target3"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: StackReference/StackReferenceTarget4
+  ##---------------------------------------------------------------------------------------
+  StackReferenceTarget4:
+    Description: "Stack Reference: Target4"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: StackReference/StackReferenceTarget5
+  ##---------------------------------------------------------------------------------------
+  StackReferenceTarget5:
+    Description: "Stack Reference: Target5"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: StackReference/StackReferenceTarget6
+  ##---------------------------------------------------------------------------------------
+  StackReferenceTarget6:
+    Description: "Stack Reference: Target6"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: StackReference/StackReferenceTarget7
+  ##---------------------------------------------------------------------------------------
+  StackReferenceTarget7:
+    Description: "Stack Reference: Target7"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: StackReference/StackReferenceTarget8
+  ##---------------------------------------------------------------------------------------
+  StackReferenceTarget8:
+    Description: "Stack Reference: Target8"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: StackReference/StackReferenceTarget9
+  ##---------------------------------------------------------------------------------------
+  StackReferenceTarget9:
+    Description: "Stack Reference: Target9"
+    Type: String
+
+##-------------------------------------------------------------------------------------------------
+Conditions:
+  ##---------------------------------------------------------------------------------------
+  # object:  StackReference/ExistsStackReferenceTarget10
+  ##---------------------------------------------------------------------------------------
+  ExistsStackReferenceTarget10:
+    !Not [!Equals [!Ref "StackReferenceTarget10", ""]]
+
+  ##---------------------------------------------------------------------------------------
+  # object:  StackReference/ExistsStackReferenceTarget1
+  ##---------------------------------------------------------------------------------------
+  ExistsStackReferenceTarget1:
+    !Not [!Equals [!Ref "StackReferenceTarget1", ""]]
+
+  ##---------------------------------------------------------------------------------------
+  # object:  StackReference/ExistsStackReferenceTarget2
+  ##---------------------------------------------------------------------------------------
+  ExistsStackReferenceTarget2:
+    !Not [!Equals [!Ref "StackReferenceTarget2", ""]]
+
+  ##---------------------------------------------------------------------------------------
+  # object:  StackReference/ExistsStackReferenceTarget3
+  ##---------------------------------------------------------------------------------------
+  ExistsStackReferenceTarget3:
+    !Not [!Equals [!Ref "StackReferenceTarget3", ""]]
+
+  ##---------------------------------------------------------------------------------------
+  # object:  StackReference/ExistsStackReferenceTarget4
+  ##---------------------------------------------------------------------------------------
+  ExistsStackReferenceTarget4:
+    !Not [!Equals [!Ref "StackReferenceTarget4", ""]]
+
+  ##---------------------------------------------------------------------------------------
+  # object:  StackReference/ExistsStackReferenceTarget5
+  ##---------------------------------------------------------------------------------------
+  ExistsStackReferenceTarget5:
+    !Not [!Equals [!Ref "StackReferenceTarget5", ""]]
+
+  ##---------------------------------------------------------------------------------------
+  # object:  StackReference/ExistsStackReferenceTarget6
+  ##---------------------------------------------------------------------------------------
+  ExistsStackReferenceTarget6:
+    !Not [!Equals [!Ref "StackReferenceTarget6", ""]]
+
+  ##---------------------------------------------------------------------------------------
+  # object:  StackReference/ExistsStackReferenceTarget7
+  ##---------------------------------------------------------------------------------------
+  ExistsStackReferenceTarget7:
+    !Not [!Equals [!Ref "StackReferenceTarget7", ""]]
+
+  ##---------------------------------------------------------------------------------------
+  # object:  StackReference/ExistsStackReferenceTarget8
+  ##---------------------------------------------------------------------------------------
+  ExistsStackReferenceTarget8:
+    !Not [!Equals [!Ref "StackReferenceTarget8", ""]]
+
+  ##---------------------------------------------------------------------------------------
+  # object:  StackReference/ExistsStackReferenceTarget9
+  ##---------------------------------------------------------------------------------------
+  ExistsStackReferenceTarget9:
+    !Not [!Equals [!Ref "StackReferenceTarget9", ""]]
+
+##-------------------------------------------------------------------------------------------------
+Resources:
+  ##---------------------------------------------------------------------------------------
+  # object:  Custom/StackReferenceResultsSource
+  ##---------------------------------------------------------------------------------------
+  StackReferenceResultsSource:
+    Type: "Custom::StackReferenceResultsSource"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !Join [ "", [ "arn:aws:lambda:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":function:stack-reference" ] ]
+      "Region": !Ref "AWS::Region"
+      "StackName": !Ref "StackReferenceSource"
+      "LastUpdate": !Ref "LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  Custom/StackReferenceResultsTarget10
+  ##---------------------------------------------------------------------------------------
+  StackReferenceResultsTarget10:
+    Condition: "ExistsStackReferenceTarget10"
+    Type: "Custom::StackReferenceResultsTarget10"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !Join [ "", [ "arn:aws:lambda:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":function:stack-reference" ] ]
+      "Region": !Ref "AWS::Region"
+      "StackName": !Ref "StackReferenceTarget10"
+      "LastUpdate": !Ref "LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  Custom/StackReferenceResultsTarget1
+  ##---------------------------------------------------------------------------------------
+  StackReferenceResultsTarget1:
+    Condition: "ExistsStackReferenceTarget1"
+    Type: "Custom::StackReferenceResultsTarget1"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !Join [ "", [ "arn:aws:lambda:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":function:stack-reference" ] ]
+      "Region": !Ref "AWS::Region"
+      "StackName": !Ref "StackReferenceTarget1"
+      "LastUpdate": !Ref "LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  Custom/StackReferenceResultsTarget2
+  ##---------------------------------------------------------------------------------------
+  StackReferenceResultsTarget2:
+    Condition: "ExistsStackReferenceTarget2"
+    Type: "Custom::StackReferenceResultsTarget2"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !Join [ "", [ "arn:aws:lambda:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":function:stack-reference" ] ]
+      "Region": !Ref "AWS::Region"
+      "StackName": !Ref "StackReferenceTarget2"
+      "LastUpdate": !Ref "LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  Custom/StackReferenceResultsTarget3
+  ##---------------------------------------------------------------------------------------
+  StackReferenceResultsTarget3:
+    Condition: "ExistsStackReferenceTarget3"
+    Type: "Custom::StackReferenceResultsTarget3"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !Join [ "", [ "arn:aws:lambda:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":function:stack-reference" ] ]
+      "Region": !Ref "AWS::Region"
+      "StackName": !Ref "StackReferenceTarget3"
+      "LastUpdate": !Ref "LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  Custom/StackReferenceResultsTarget4
+  ##---------------------------------------------------------------------------------------
+  StackReferenceResultsTarget4:
+    Condition: "ExistsStackReferenceTarget4"
+    Type: "Custom::StackReferenceResultsTarget4"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !Join [ "", [ "arn:aws:lambda:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":function:stack-reference" ] ]
+      "Region": !Ref "AWS::Region"
+      "StackName": !Ref "StackReferenceTarget4"
+      "LastUpdate": !Ref "LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  Custom/StackReferenceResultsTarget5
+  ##---------------------------------------------------------------------------------------
+  StackReferenceResultsTarget5:
+    Condition: "ExistsStackReferenceTarget5"
+    Type: "Custom::StackReferenceResultsTarget5"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !Join [ "", [ "arn:aws:lambda:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":function:stack-reference" ] ]
+      "Region": !Ref "AWS::Region"
+      "StackName": !Ref "StackReferenceTarget5"
+      "LastUpdate": !Ref "LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  Custom/StackReferenceResultsTarget6
+  ##---------------------------------------------------------------------------------------
+  StackReferenceResultsTarget6:
+    Condition: "ExistsStackReferenceTarget6"
+    Type: "Custom::StackReferenceResultsTarget6"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !Join [ "", [ "arn:aws:lambda:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":function:stack-reference" ] ]
+      "Region": !Ref "AWS::Region"
+      "StackName": !Ref "StackReferenceTarget6"
+      "LastUpdate": !Ref "LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  Custom/StackReferenceResultsTarget7
+  ##---------------------------------------------------------------------------------------
+  StackReferenceResultsTarget7:
+    Condition: "ExistsStackReferenceTarget7"
+    Type: "Custom::StackReferenceResultsTarget7"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !Join [ "", [ "arn:aws:lambda:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":function:stack-reference" ] ]
+      "Region": !Ref "AWS::Region"
+      "StackName": !Ref "StackReferenceTarget7"
+      "LastUpdate": !Ref "LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  Custom/StackReferenceResultsTarget8
+  ##---------------------------------------------------------------------------------------
+  StackReferenceResultsTarget8:
+    Condition: "ExistsStackReferenceTarget8"
+    Type: "Custom::StackReferenceResultsTarget8"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !Join [ "", [ "arn:aws:lambda:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":function:stack-reference" ] ]
+      "Region": !Ref "AWS::Region"
+      "StackName": !Ref "StackReferenceTarget8"
+      "LastUpdate": !Ref "LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  Custom/StackReferenceResultsTarget9
+  ##---------------------------------------------------------------------------------------
+  StackReferenceResultsTarget9:
+    Condition: "ExistsStackReferenceTarget9"
+    Type: "Custom::StackReferenceResultsTarget9"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !Join [ "", [ "arn:aws:lambda:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":function:stack-reference" ] ]
+      "Region": !Ref "AWS::Region"
+      "StackName": !Ref "StackReferenceTarget9"
+      "LastUpdate": !Ref "LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/Route/PeeringSourceToTarget10
+  ##---------------------------------------------------------------------------------------
+  PeeringSourceToTarget10Private:
+    Condition: "ExistsStackReferenceTarget10"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget10.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget10"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget10"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget10"
+  RoutePeerTarget10ToSourcePrivate:
+    Condition: "ExistsStackReferenceTarget10"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget10.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget10"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget10"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget10"
+  PeeringSourceToTarget10Restricted:
+    Condition: "ExistsStackReferenceTarget10"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget10.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget10"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget10"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget10"
+  RoutePeerTarget10ToSourceRestricted:
+    Condition: "ExistsStackReferenceTarget10"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget10.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget10"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget10"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget10"
+  PeeringSourceToTarget10Public:
+    Condition: "ExistsStackReferenceTarget10"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget10.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget10"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget10"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget10"
+  RoutePeerTarget10ToSourcePublic:
+    Condition: "ExistsStackReferenceTarget10"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget10.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget10"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget10"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget10"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/Route/PeeringSourceToTarget1
+  ##---------------------------------------------------------------------------------------
+  PeeringSourceToTarget1Private:
+    Condition: "ExistsStackReferenceTarget1"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget1.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget1"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget1"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget1"
+  RoutePeerTarget1ToSourcePrivate:
+    Condition: "ExistsStackReferenceTarget1"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget1.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget1"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget1"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget1"
+  PeeringSourceToTarget1Restricted:
+    Condition: "ExistsStackReferenceTarget1"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget1.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget1"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget1"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget1"
+  RoutePeerTarget1ToSourceRestricted:
+    Condition: "ExistsStackReferenceTarget1"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget1.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget1"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget1"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget1"
+  PeeringSourceToTarget1Public:
+    Condition: "ExistsStackReferenceTarget1"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget1.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget1"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget1"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget1"
+  RoutePeerTarget1ToSourcePublic:
+    Condition: "ExistsStackReferenceTarget1"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget1.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget1"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget1"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget1"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/Route/PeeringSourceToTarget2
+  ##---------------------------------------------------------------------------------------
+  PeeringSourceToTarget2Private:
+    Condition: "ExistsStackReferenceTarget2"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget2.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget2"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget2"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget2"
+  RoutePeerTarget2ToSourcePrivate:
+    Condition: "ExistsStackReferenceTarget2"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget2.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget2"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget2"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget2"
+  PeeringSourceToTarget2Restricted:
+    Condition: "ExistsStackReferenceTarget2"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget2.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget2"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget2"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget2"
+  RoutePeerTarget2ToSourceRestricted:
+    Condition: "ExistsStackReferenceTarget2"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget2.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget2"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget2"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget2"
+  PeeringSourceToTarget2Public:
+    Condition: "ExistsStackReferenceTarget2"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget2.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget2"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget2"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget2"
+  RoutePeerTarget2ToSourcePublic:
+    Condition: "ExistsStackReferenceTarget2"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget2.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget2"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget2"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget2"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/Route/PeeringSourceToTarget3
+  ##---------------------------------------------------------------------------------------
+  PeeringSourceToTarget3Private:
+    Condition: "ExistsStackReferenceTarget3"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget3.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget3"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget3"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget3"
+  RoutePeerTarget3ToSourcePrivate:
+    Condition: "ExistsStackReferenceTarget3"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget3.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget3"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget3"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget3"
+  PeeringSourceToTarget3Restricted:
+    Condition: "ExistsStackReferenceTarget3"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget3.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget3"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget3"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget3"
+  RoutePeerTarget3ToSourceRestricted:
+    Condition: "ExistsStackReferenceTarget3"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget3.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget3"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget3"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget3"
+  PeeringSourceToTarget3Public:
+    Condition: "ExistsStackReferenceTarget3"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget3.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget3"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget3"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget3"
+  RoutePeerTarget3ToSourcePublic:
+    Condition: "ExistsStackReferenceTarget3"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget3.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget3"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget3"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget3"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/Route/PeeringSourceToTarget4
+  ##---------------------------------------------------------------------------------------
+  PeeringSourceToTarget4Private:
+    Condition: "ExistsStackReferenceTarget4"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget4.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget4"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget4"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget4"
+  RoutePeerTarget4ToSourcePrivate:
+    Condition: "ExistsStackReferenceTarget4"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget4.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget4"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget4"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget4"
+  PeeringSourceToTarget4Restricted:
+    Condition: "ExistsStackReferenceTarget4"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget4.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget4"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget4"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget4"
+  RoutePeerTarget4ToSourceRestricted:
+    Condition: "ExistsStackReferenceTarget4"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget4.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget4"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget4"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget4"
+  PeeringSourceToTarget4Public:
+    Condition: "ExistsStackReferenceTarget4"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget4.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget4"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget4"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget4"
+  RoutePeerTarget4ToSourcePublic:
+    Condition: "ExistsStackReferenceTarget4"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget4.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget4"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget4"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget4"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/Route/PeeringSourceToTarget5
+  ##---------------------------------------------------------------------------------------
+  PeeringSourceToTarget5Private:
+    Condition: "ExistsStackReferenceTarget5"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget5.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget5"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget5"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget5"
+  RoutePeerTarget5ToSourcePrivate:
+    Condition: "ExistsStackReferenceTarget5"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget5.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget5"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget5"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget5"
+  PeeringSourceToTarget5Restricted:
+    Condition: "ExistsStackReferenceTarget5"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget5.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget5"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget5"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget5"
+  RoutePeerTarget5ToSourceRestricted:
+    Condition: "ExistsStackReferenceTarget5"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget5.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget5"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget5"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget5"
+  PeeringSourceToTarget5Public:
+    Condition: "ExistsStackReferenceTarget5"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget5.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget5"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget5"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget5"
+  RoutePeerTarget5ToSourcePublic:
+    Condition: "ExistsStackReferenceTarget5"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget5.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget5"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget5"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget5"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/Route/PeeringSourceToTarget6
+  ##---------------------------------------------------------------------------------------
+  PeeringSourceToTarget6Private:
+    Condition: "ExistsStackReferenceTarget6"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget6.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget6"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget6"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget6"
+  RoutePeerTarget6ToSourcePrivate:
+    Condition: "ExistsStackReferenceTarget6"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget6.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget6"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget6"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget6"
+  PeeringSourceToTarget6Restricted:
+    Condition: "ExistsStackReferenceTarget6"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget6.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget6"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget6"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget6"
+  RoutePeerTarget6ToSourceRestricted:
+    Condition: "ExistsStackReferenceTarget6"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget6.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget6"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget6"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget6"
+  PeeringSourceToTarget6Public:
+    Condition: "ExistsStackReferenceTarget6"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget6.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget6"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget6"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget6"
+  RoutePeerTarget6ToSourcePublic:
+    Condition: "ExistsStackReferenceTarget6"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget6.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget6"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget6"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget6"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/Route/PeeringSourceToTarget7
+  ##---------------------------------------------------------------------------------------
+  PeeringSourceToTarget7Private:
+    Condition: "ExistsStackReferenceTarget7"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget7.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget7"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget7"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget7"
+  RoutePeerTarget7ToSourcePrivate:
+    Condition: "ExistsStackReferenceTarget7"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget7.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget7"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget7"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget7"
+  PeeringSourceToTarget7Restricted:
+    Condition: "ExistsStackReferenceTarget7"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget7.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget7"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget7"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget7"
+  RoutePeerTarget7ToSourceRestricted:
+    Condition: "ExistsStackReferenceTarget7"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget7.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget7"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget7"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget7"
+  PeeringSourceToTarget7Public:
+    Condition: "ExistsStackReferenceTarget7"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget7.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget7"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget7"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget7"
+  RoutePeerTarget7ToSourcePublic:
+    Condition: "ExistsStackReferenceTarget7"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget7.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget7"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget7"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget7"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/Route/PeeringSourceToTarget8
+  ##---------------------------------------------------------------------------------------
+  PeeringSourceToTarget8Private:
+    Condition: "ExistsStackReferenceTarget8"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget8.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget8"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget8"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget8"
+  RoutePeerTarget8ToSourcePrivate:
+    Condition: "ExistsStackReferenceTarget8"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget8.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget8"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget8"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget8"
+  PeeringSourceToTarget8Restricted:
+    Condition: "ExistsStackReferenceTarget8"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget8.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget8"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget8"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget8"
+  RoutePeerTarget8ToSourceRestricted:
+    Condition: "ExistsStackReferenceTarget8"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget8.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget8"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget8"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget8"
+  PeeringSourceToTarget8Public:
+    Condition: "ExistsStackReferenceTarget8"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget8.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget8"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget8"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget8"
+  RoutePeerTarget8ToSourcePublic:
+    Condition: "ExistsStackReferenceTarget8"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget8.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget8"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget8"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget8"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/Route/PeeringSourceToTarget9
+  ##---------------------------------------------------------------------------------------
+  PeeringSourceToTarget9Private:
+    Condition: "ExistsStackReferenceTarget9"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget9.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget9"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget9"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget9"
+  RoutePeerTarget9ToSourcePrivate:
+    Condition: "ExistsStackReferenceTarget9"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget9.RouteTablePrivateId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget9"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget9"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget9"
+  PeeringSourceToTarget9Restricted:
+    Condition: "ExistsStackReferenceTarget9"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget9.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget9"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget9"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget9"
+  RoutePeerTarget9ToSourceRestricted:
+    Condition: "ExistsStackReferenceTarget9"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget9.RouteTableRestrictedId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget9"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget9"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget9"
+  PeeringSourceToTarget9Public:
+    Condition: "ExistsStackReferenceTarget9"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsSource.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsTarget9.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget9"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget9"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget9"
+  RoutePeerTarget9ToSourcePublic:
+    Condition: "ExistsStackReferenceTarget9"
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId:           !GetAtt "StackReferenceResultsTarget9.RouteTablePublicId"
+      DestinationCidrBlock:   !GetAtt "StackReferenceResultsSource.VPCCidr"
+      VpcPeeringConnectionId: !Ref "VPCPeeringConnectionSourceToTarget9"
+    DependsOn:
+      - "VPCPeeringConnectionSourceToTarget9"
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget9"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/VPCPeeringConnection/SourceToTarget10
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget10:
+    Condition: "ExistsStackReferenceTarget10"
+    Type: "AWS::EC2::VPCPeeringConnection"
+    Properties:
+      VpcId: !GetAtt "StackReferenceResultsSource.VPCId"
+      PeerVpcId: !GetAtt "StackReferenceResultsTarget10.VPCId"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "", [ !GetAtt "StackReferenceResultsSource.OrganizationAbbr", "-to-", !GetAtt "StackReferenceResultsTarget10.OrganizationAbbr", "-", !Ref "AWS::Region" ] ]
+    DependsOn:
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget10"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/VPCPeeringConnection/SourceToTarget1
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget1:
+    Condition: "ExistsStackReferenceTarget1"
+    Type: "AWS::EC2::VPCPeeringConnection"
+    Properties:
+      VpcId: !GetAtt "StackReferenceResultsSource.VPCId"
+      PeerVpcId: !GetAtt "StackReferenceResultsTarget1.VPCId"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "", [ !GetAtt "StackReferenceResultsSource.OrganizationAbbr", "-to-", !GetAtt "StackReferenceResultsTarget1.OrganizationAbbr", "-", !Ref "AWS::Region" ] ]
+    DependsOn:
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget1"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/VPCPeeringConnection/SourceToTarget2
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget2:
+    Condition: "ExistsStackReferenceTarget2"
+    Type: "AWS::EC2::VPCPeeringConnection"
+    Properties:
+      VpcId: !GetAtt "StackReferenceResultsSource.VPCId"
+      PeerVpcId: !GetAtt "StackReferenceResultsTarget2.VPCId"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "", [ !GetAtt "StackReferenceResultsSource.OrganizationAbbr", "-to-", !GetAtt "StackReferenceResultsTarget2.OrganizationAbbr", "-", !Ref "AWS::Region" ] ]
+    DependsOn:
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget2"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/VPCPeeringConnection/SourceToTarget3
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget3:
+    Condition: "ExistsStackReferenceTarget3"
+    Type: "AWS::EC2::VPCPeeringConnection"
+    Properties:
+      VpcId: !GetAtt "StackReferenceResultsSource.VPCId"
+      PeerVpcId: !GetAtt "StackReferenceResultsTarget3.VPCId"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "", [ !GetAtt "StackReferenceResultsSource.OrganizationAbbr", "-to-", !GetAtt "StackReferenceResultsTarget3.OrganizationAbbr", "-", !Ref "AWS::Region" ] ]
+    DependsOn:
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget3"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/VPCPeeringConnection/SourceToTarget4
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget4:
+    Condition: "ExistsStackReferenceTarget4"
+    Type: "AWS::EC2::VPCPeeringConnection"
+    Properties:
+      VpcId: !GetAtt "StackReferenceResultsSource.VPCId"
+      PeerVpcId: !GetAtt "StackReferenceResultsTarget4.VPCId"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "", [ !GetAtt "StackReferenceResultsSource.OrganizationAbbr", "-to-", !GetAtt "StackReferenceResultsTarget4.OrganizationAbbr", "-", !Ref "AWS::Region" ] ]
+    DependsOn:
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget4"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/VPCPeeringConnection/SourceToTarget5
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget5:
+    Condition: "ExistsStackReferenceTarget5"
+    Type: "AWS::EC2::VPCPeeringConnection"
+    Properties:
+      VpcId: !GetAtt "StackReferenceResultsSource.VPCId"
+      PeerVpcId: !GetAtt "StackReferenceResultsTarget5.VPCId"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "", [ !GetAtt "StackReferenceResultsSource.OrganizationAbbr", "-to-", !GetAtt "StackReferenceResultsTarget5.OrganizationAbbr", "-", !Ref "AWS::Region" ] ]
+    DependsOn:
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget5"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/VPCPeeringConnection/SourceToTarget6
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget6:
+    Condition: "ExistsStackReferenceTarget6"
+    Type: "AWS::EC2::VPCPeeringConnection"
+    Properties:
+      VpcId: !GetAtt "StackReferenceResultsSource.VPCId"
+      PeerVpcId: !GetAtt "StackReferenceResultsTarget6.VPCId"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "", [ !GetAtt "StackReferenceResultsSource.OrganizationAbbr", "-to-", !GetAtt "StackReferenceResultsTarget6.OrganizationAbbr", "-", !Ref "AWS::Region" ] ]
+    DependsOn:
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget6"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/VPCPeeringConnection/SourceToTarget7
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget7:
+    Condition: "ExistsStackReferenceTarget7"
+    Type: "AWS::EC2::VPCPeeringConnection"
+    Properties:
+      VpcId: !GetAtt "StackReferenceResultsSource.VPCId"
+      PeerVpcId: !GetAtt "StackReferenceResultsTarget7.VPCId"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "", [ !GetAtt "StackReferenceResultsSource.OrganizationAbbr", "-to-", !GetAtt "StackReferenceResultsTarget7.OrganizationAbbr", "-", !Ref "AWS::Region" ] ]
+    DependsOn:
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget7"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/VPCPeeringConnection/SourceToTarget8
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget8:
+    Condition: "ExistsStackReferenceTarget8"
+    Type: "AWS::EC2::VPCPeeringConnection"
+    Properties:
+      VpcId: !GetAtt "StackReferenceResultsSource.VPCId"
+      PeerVpcId: !GetAtt "StackReferenceResultsTarget8.VPCId"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "", [ !GetAtt "StackReferenceResultsSource.OrganizationAbbr", "-to-", !GetAtt "StackReferenceResultsTarget8.OrganizationAbbr", "-", !Ref "AWS::Region" ] ]
+    DependsOn:
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget8"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  EC2/VPCPeeringConnection/SourceToTarget9
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget9:
+    Condition: "ExistsStackReferenceTarget9"
+    Type: "AWS::EC2::VPCPeeringConnection"
+    Properties:
+      VpcId: !GetAtt "StackReferenceResultsSource.VPCId"
+      PeerVpcId: !GetAtt "StackReferenceResultsTarget9.VPCId"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "", [ !GetAtt "StackReferenceResultsSource.OrganizationAbbr", "-to-", !GetAtt "StackReferenceResultsTarget9.OrganizationAbbr", "-", !Ref "AWS::Region" ] ]
+    DependsOn:
+      - "StackReferenceResultsSource"
+      - "StackReferenceResultsTarget9"
+
+##-------------------------------------------------------------------------------------------------
+Outputs:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Contact
+  ##---------------------------------------------------------------------------------------
+  Contact:
+    Description: "Details: Contact"
+    Value: !Select [1, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Contact"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Environment
+  ##---------------------------------------------------------------------------------------
+  Environment:
+    Description: "Details: Environment"
+    Value: !Select [3, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Environment"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionAbbr
+  ##---------------------------------------------------------------------------------------
+  FunctionAbbr:
+    Description: "Details: FunctionAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionName
+  ##---------------------------------------------------------------------------------------
+  FunctionName:
+    Description: "Details: FunctionName"
+    Value: !Select [0, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: LastUpdate"
+    Value: !Ref "LastUpdate"
+    Export:
+      Name: !Sub "${AWS::StackName}-LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationAbbr
+  ##---------------------------------------------------------------------------------------
+  OrganizationAbbr:
+    Description: "Details: OrganizationAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationName
+  ##---------------------------------------------------------------------------------------
+  OrganizationName:
+    Description: "Details: OrganizationName"
+    Value: !Select [0, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner"
+    Value: !Select [0, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Owner"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectAbbr
+  ##---------------------------------------------------------------------------------------
+  ProjectAbbr:
+    Description: "Details: ProjectAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectName
+  ##---------------------------------------------------------------------------------------
+  ProjectName:
+    Description: "Details: ProjectName"
+    Value: !Select [0, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectName"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  VPCPeeringConnection/SourceToTarget10Id
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget10Id:
+    Condition: "ExistsStackReferenceTarget10"
+    Description: "VPC Peering Connection: SourceToTarget10 ID"
+    Value: !Ref "VPCPeeringConnectionSourceToTarget10"
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCPeeringConnectionSourceToTarget10Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  VPCPeeringConnection/SourceToTarget1Id
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget1Id:
+    Condition: "ExistsStackReferenceTarget1"
+    Description: "VPC Peering Connection: SourceToTarget1 ID"
+    Value: !Ref "VPCPeeringConnectionSourceToTarget1"
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCPeeringConnectionSourceToTarget1Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  VPCPeeringConnection/SourceToTarget2Id
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget2Id:
+    Condition: "ExistsStackReferenceTarget2"
+    Description: "VPC Peering Connection: SourceToTarget2 ID"
+    Value: !Ref "VPCPeeringConnectionSourceToTarget2"
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCPeeringConnectionSourceToTarget2Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  VPCPeeringConnection/SourceToTarget3Id
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget3Id:
+    Condition: "ExistsStackReferenceTarget3"
+    Description: "VPC Peering Connection: SourceToTarget3 ID"
+    Value: !Ref "VPCPeeringConnectionSourceToTarget3"
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCPeeringConnectionSourceToTarget3Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  VPCPeeringConnection/SourceToTarget4Id
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget4Id:
+    Condition: "ExistsStackReferenceTarget4"
+    Description: "VPC Peering Connection: SourceToTarget4 ID"
+    Value: !Ref "VPCPeeringConnectionSourceToTarget4"
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCPeeringConnectionSourceToTarget4Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  VPCPeeringConnection/SourceToTarget5Id
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget5Id:
+    Condition: "ExistsStackReferenceTarget5"
+    Description: "VPC Peering Connection: SourceToTarget5 ID"
+    Value: !Ref "VPCPeeringConnectionSourceToTarget5"
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCPeeringConnectionSourceToTarget5Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  VPCPeeringConnection/SourceToTarget6Id
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget6Id:
+    Condition: "ExistsStackReferenceTarget6"
+    Description: "VPC Peering Connection: SourceToTarget6 ID"
+    Value: !Ref "VPCPeeringConnectionSourceToTarget6"
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCPeeringConnectionSourceToTarget6Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  VPCPeeringConnection/SourceToTarget7Id
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget7Id:
+    Condition: "ExistsStackReferenceTarget7"
+    Description: "VPC Peering Connection: SourceToTarget7 ID"
+    Value: !Ref "VPCPeeringConnectionSourceToTarget7"
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCPeeringConnectionSourceToTarget7Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  VPCPeeringConnection/SourceToTarget8Id
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget8Id:
+    Condition: "ExistsStackReferenceTarget8"
+    Description: "VPC Peering Connection: SourceToTarget8 ID"
+    Value: !Ref "VPCPeeringConnectionSourceToTarget8"
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCPeeringConnectionSourceToTarget8Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object:  VPCPeeringConnection/SourceToTarget9Id
+  ##---------------------------------------------------------------------------------------
+  VPCPeeringConnectionSourceToTarget9Id:
+    Condition: "ExistsStackReferenceTarget9"
+    Description: "VPC Peering Connection: SourceToTarget9 ID"
+    Value: !Ref "VPCPeeringConnectionSourceToTarget9"
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCPeeringConnectionSourceToTarget9Id"
+

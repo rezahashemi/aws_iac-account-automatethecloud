@@ -1,0 +1,84 @@
+##---------------------------------------------------------------------------------------
+# object:  Custom_SAML_Roles
+##---------------------------------------------------------------------------------------
+RoleSAMLCustomAutomateTheCloudAdministrator:
+  Type: "AWS::IAM::Role"
+  Properties:
+    RoleName: "SAML_AutomateTheCloud_Administrator"
+    MaxSessionDuration: !Ref "SAMLMaxSessionDurationUser"
+    AssumeRolePolicyDocument:
+      Version: "2012-10-17"
+      Statement:
+      - Action: "sts:AssumeRoleWithSAML"
+        Effect: "Allow"
+        Condition:
+          StringEquals:
+            SAML:aud: https://signin.aws.amazon.com/saml
+        Principal:
+          Federated: !Sub arn:aws:iam::${AWS::AccountId}:saml-provider/${SAMLProviderName}
+    Path: "/"
+    ManagedPolicyArns:
+      - "arn:aws:iam::aws:policy/ReadOnlyAccess"
+    Policies:
+      -
+        PolicyName: "iam_instance_access_automatethecloud-administrator"
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "ec2:DescribeInstances"
+              Resource: "*"
+            - Effect: "Allow"
+              Action:
+                - "ec2-instance-connect:SendSSHPublicKey"
+              Condition:
+                StringEquals:
+                  ec2:osuser: automatethecloud-administrator
+              Resource:
+                - !Join [ "", [ "arn:aws:ec2:*:", !Ref "AWS::AccountId", ":instance/*" ] ]
+            - Effect: "Allow"
+              Action:
+                - "ec2-instance-connect:SendSSHPublicKey"
+              Condition:
+                StringEquals:
+                  ec2:osuser: automatethecloud-developer
+              Resource:
+                - !Join [ "", [ "arn:aws:ec2:*:", !Ref "AWS::AccountId", ":instance/*" ] ]
+
+RoleSAMLCustomAutomateTheCloudDeveloper:
+  Type: "AWS::IAM::Role"
+  Properties:
+    RoleName: "SAML_AutomateTheCloud_Developer"
+    MaxSessionDuration: !Ref "SAMLMaxSessionDurationUser"
+    AssumeRolePolicyDocument:
+      Version: "2012-10-17"
+      Statement:
+      - Action: "sts:AssumeRoleWithSAML"
+        Effect: "Allow"
+        Condition:
+          StringEquals:
+            SAML:aud: https://signin.aws.amazon.com/saml
+        Principal:
+          Federated: !Sub arn:aws:iam::${AWS::AccountId}:saml-provider/${SAMLProviderName}
+    Path: "/"
+    ManagedPolicyArns:
+      - "arn:aws:iam::aws:policy/ReadOnlyAccess"
+    Policies:
+      -
+        PolicyName: "iam_instance_access_automatethecloud-developer"
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "ec2:DescribeInstances"
+              Resource: "*"
+            - Effect: "Allow"
+              Action:
+                - "ec2-instance-connect:SendSSHPublicKey"
+              Condition:
+                StringEquals:
+                  ec2:osuser: automatethecloud-developer
+              Resource:
+                - !Join [ "", [ "arn:aws:ec2:*:", !Ref "AWS::AccountId", ":instance/*" ] ]

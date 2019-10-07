@@ -1,0 +1,1246 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Infrastructure - VPC: Demo - us-east-1"
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Account
+  ##---------------------------------------------------------------------------------------
+  Account:
+    Description: "Details: Account (AccountName | AccountAbbr | AccountNumber)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Function
+  ##---------------------------------------------------------------------------------------
+  Function:
+    Description: "Details: Function (FunctionName | FunctionAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: Last Update"
+    Type: String
+    Default: 0
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Organization
+  ##---------------------------------------------------------------------------------------
+  Organization:
+    Description: "Details: Organization (OrganizationName | OrganizationAbbr | region | environment)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner (Owner | Contact)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Project
+  ##---------------------------------------------------------------------------------------
+  Project:
+    Description: "Details: Project (ProjectName | ProjectAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: FlowLog/FlowLogTrafficType
+  ##---------------------------------------------------------------------------------------
+  FlowLogTrafficType:
+    Description: "FlowLog: Traffic Type"
+    Type: String
+    Default: ""
+    AllowedValues:
+      - ""
+      - "ALL"
+      - "ACCEPT"
+      - "REJECT"
+    ConstraintDescription: "Allowed Values: ALL, ACCEPT, REJECT"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Instance/KeypairDefault
+  ##---------------------------------------------------------------------------------------
+  KeypairDefault:
+    Description: "EC2 KeyPair (Default)"
+    Type: "AWS::EC2::KeyPair::KeyName"
+    ConstraintDescription: "must be the name of an existing EC2 KeyPair"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Instance/TimezoneLinux
+  ##---------------------------------------------------------------------------------------
+  TimezoneLinux:
+    Description: "Timezone (Linux)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Instance/TimezoneWindows
+  ##---------------------------------------------------------------------------------------
+  TimezoneWindows:
+    Description: "Timezone (Windows)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/AvailabilityZone1
+  ##---------------------------------------------------------------------------------------
+  AvailabilityZone1:
+    Description: "Availability Zone 1"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/AvailabilityZone2
+  ##---------------------------------------------------------------------------------------
+  AvailabilityZone2:
+    Description: "Availability Zone 2"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/AvailabilityZone3
+  ##---------------------------------------------------------------------------------------
+  AvailabilityZone3:
+    Description: "Availability Zone 3"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/IpNetmask
+  ##---------------------------------------------------------------------------------------
+  IpNetmask:
+    Description: "IP Netmask of the VPC"
+    Type: String
+    Default: 24
+    AllowedValues:
+      - 24
+      - 22
+      - 21
+      - 20
+      - 19
+      - 18
+      - 16
+    ConstraintDescription: "Supported Netmask: 24, 22, 21, 20, 19, 18, 16"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/IpNetwork
+  ##---------------------------------------------------------------------------------------
+  IpNetwork:
+    Description: "IP Network of the VPC (format: x.x.x.x)"
+    Type: String
+    MinLength: 5
+    MaxLength: 15
+    Default: "10.0.0.0"
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})"
+    ConstraintDescription: "must be in IPv4 format (example: x.x.x.x)"
+
+  ##---------------------------------------------------------------------------------------
+  # object: StackReference/StackReferenceInitialize
+  ##---------------------------------------------------------------------------------------
+  StackReferenceInitialize:
+    Description: "Stack Reference: Initialize"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: VPC/EnableVPCFlowLogs
+  ##---------------------------------------------------------------------------------------
+  EnableVPCFlowLogs:
+    Description: "Enable VPC Flow Logs"
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - ""
+      - "true"
+      - "false"
+    ConstraintDescription: "true/false"
+
+##-------------------------------------------------------------------------------------------------
+Conditions:
+  ##---------------------------------------------------------------------------------------
+  # object: VPC/EnabledVPCFlowLogs
+  ##---------------------------------------------------------------------------------------
+  EnabledVPCFlowLogs:
+    !Equals [ !Ref "EnableVPCFlowLogs", "true" ]
+
+##-------------------------------------------------------------------------------------------------
+Resources:
+  ##---------------------------------------------------------------------------------------
+  # object: Custom/StackReferenceResultsInitialize
+  ##---------------------------------------------------------------------------------------
+  StackReferenceResultsInitialize:
+    Type: "Custom::StackReferenceResultsInitialize"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !Join [ "", [ "arn:aws:lambda:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":function:stack-reference" ] ]
+      "Region": !Ref "AWS::Region"
+      "StackName": !Ref "StackReferenceInitialize"
+      "LastUpdate": !Ref "LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Custom/VPCSubnetCIDRResults
+  ##---------------------------------------------------------------------------------------
+  VPCSubnetCIDRResults:
+    Type: "Custom::VPCSubnetCIDRResults"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !Join [ "", [ "arn:aws:lambda:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":function:vpc-subnet-cidr" ] ]
+      "IpNetwork": !Ref "IpNetwork"
+      "IpNetmask": !Ref "IpNetmask"
+      "LastUpdate": !Ref "LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/FlowLog/VPC
+  ##---------------------------------------------------------------------------------------
+  FlowLogVPC:
+    Condition: "EnabledVPCFlowLogs"
+    Type: "AWS::EC2::FlowLog"
+    Properties:
+      LogDestination: !Join [ "", [ "arn:aws:s3:::", !GetAtt "StackReferenceResultsInitialize.S3BucketLogs", "/flowlogs/", !Ref "VPC", "/" ] ]
+      LogDestinationType: "s3"
+      ResourceId: !Ref "VPC"
+      ResourceType: "VPC"
+      TrafficType: !Ref "FlowLogTrafficType"
+    DependsOn:
+      - "VPC"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/InternetGateway/InternetGateway
+  ##---------------------------------------------------------------------------------------
+  InternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "igw", !Select [1, !Split ["|", !Ref "Organization"]], !Ref "AWS::Region" ] ]
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/Route/Public
+  ##---------------------------------------------------------------------------------------
+  RoutePublic:
+    Type: "AWS::EC2::Route"
+    Properties:
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref "InternetGateway"
+      RouteTableId: !Ref "RouteTablePublic"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/RouteTable/Private
+  ##---------------------------------------------------------------------------------------
+  RouteTablePrivate:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref "VPC"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "route", !Select [1, !Split ["|", !Ref "Organization"]], "private", !Ref "AWS::Region" ] ]
+        - Key: "Network"
+          Value: "private"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/RouteTable/Public
+  ##---------------------------------------------------------------------------------------
+  RouteTablePublic:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref "VPC"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "route", !Select [1, !Split ["|", !Ref "Organization"]], "public", !Ref "AWS::Region" ] ]
+        - Key: "Network"
+          Value: "public"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/RouteTable/Restricted
+  ##---------------------------------------------------------------------------------------
+  RouteTableRestricted:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref "VPC"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "route", !Select [1, !Split ["|", !Ref "Organization"]], "restricted", !Ref "AWS::Region" ] ]
+        - Key: "Network"
+          Value: "restricted"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/Subnet/Private1
+  ##---------------------------------------------------------------------------------------
+  SubnetPrivate1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-private-1-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-private-1-netmask" ] ]
+      AvailabilityZone: !Ref "AvailabilityZone1"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "subnet", !Select [1, !Split ["|", !Ref "Organization"]], "private-1", !Ref "AWS::Region" ] ]
+        - Key: "Network"
+          Value: "private"
+    DependsOn: "VPCSubnetCIDRResults"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/Subnet/Private2
+  ##---------------------------------------------------------------------------------------
+  SubnetPrivate2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-private-2-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-private-2-netmask" ] ]
+      AvailabilityZone: !Ref "AvailabilityZone2"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "subnet", !Select [1, !Split ["|", !Ref "Organization"]], "private-2", !Ref "AWS::Region" ] ]
+        - Key: "Network"
+          Value: "private"
+    DependsOn: "VPCSubnetCIDRResults"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/Subnet/Private3
+  ##---------------------------------------------------------------------------------------
+  SubnetPrivate3:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-private-3-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-private-3-netmask" ] ]
+      AvailabilityZone: !Ref "AvailabilityZone3"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "subnet", !Select [1, !Split ["|", !Ref "Organization"]], "private-3", !Ref "AWS::Region" ] ]
+        - Key: "Network"
+          Value: "private"
+    DependsOn: "VPCSubnetCIDRResults"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/Subnet/Public1
+  ##---------------------------------------------------------------------------------------
+  SubnetPublic1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-public-1-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-public-1-netmask" ] ]
+      MapPublicIpOnLaunch: "true"
+      AvailabilityZone: !Ref "AvailabilityZone1"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "subnet", !Select [1, !Split ["|", !Ref "Organization"]], "public-1", !Ref "AWS::Region" ] ]
+        - Key: "Network"
+          Value: "public"
+    DependsOn: "VPCSubnetCIDRResults"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/Subnet/Public2
+  ##---------------------------------------------------------------------------------------
+  SubnetPublic2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-public-2-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-public-2-netmask" ] ]
+      MapPublicIpOnLaunch: "true"
+      AvailabilityZone: !Ref "AvailabilityZone2"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "subnet", !Select [1, !Split ["|", !Ref "Organization"]], "public-2", !Ref "AWS::Region" ] ]
+        - Key: "Network"
+          Value: "public"
+    DependsOn: "VPCSubnetCIDRResults"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/Subnet/Public3
+  ##---------------------------------------------------------------------------------------
+  SubnetPublic3:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-public-3-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-public-3-netmask" ] ]
+      MapPublicIpOnLaunch: "true"
+      AvailabilityZone: !Ref "AvailabilityZone3"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "subnet", !Select [1, !Split ["|", !Ref "Organization"]], "public-3", !Ref "AWS::Region" ] ]
+        - Key: "Network"
+          Value: "public"
+    DependsOn: "VPCSubnetCIDRResults"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/Subnet/Restricted1
+  ##---------------------------------------------------------------------------------------
+  SubnetRestricted1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-restricted-1-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-restricted-1-netmask" ] ]
+      AvailabilityZone: !Ref "AvailabilityZone1"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "subnet", !Select [1, !Split ["|", !Ref "Organization"]], "restricted-1", !Ref "AWS::Region" ] ]
+        - Key: "Network"
+          Value: "restricted"
+    DependsOn: "VPCSubnetCIDRResults"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/Subnet/Restricted2
+  ##---------------------------------------------------------------------------------------
+  SubnetRestricted2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-restricted-2-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-restricted-2-netmask" ] ]
+      AvailabilityZone: !Ref "AvailabilityZone2"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "subnet", !Select [1, !Split ["|", !Ref "Organization"]], "restricted-2", !Ref "AWS::Region" ] ]
+        - Key: "Network"
+          Value: "restricted"
+    DependsOn: "VPCSubnetCIDRResults"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/Subnet/Restricted3
+  ##---------------------------------------------------------------------------------------
+  SubnetRestricted3:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-restricted-3-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-restricted-3-netmask" ] ]
+      AvailabilityZone: !Ref "AvailabilityZone3"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "subnet", !Select [1, !Split ["|", !Ref "Organization"]], "restricted-3", !Ref "AWS::Region" ] ]
+        - Key: "Network"
+          Value: "restricted"
+    DependsOn: "VPCSubnetCIDRResults"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/SubnetRouteTableAssociation/Private1
+  ##---------------------------------------------------------------------------------------
+  SubnetRouteTableAssociationPrivate1:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref "SubnetPrivate1"
+      RouteTableId: !Ref "RouteTablePrivate"
+    DependsOn:
+      - "SubnetPrivate1"
+      - "RouteTablePrivate"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/SubnetRouteTableAssociation/Private2
+  ##---------------------------------------------------------------------------------------
+  SubnetRouteTableAssociationPrivate2:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref "SubnetPrivate2"
+      RouteTableId: !Ref "RouteTablePrivate"
+    DependsOn:
+      - "SubnetPrivate2"
+      - "RouteTablePrivate"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/SubnetRouteTableAssociation/Private3
+  ##---------------------------------------------------------------------------------------
+  SubnetRouteTableAssociationPrivate3:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref "SubnetPrivate3"
+      RouteTableId: !Ref "RouteTablePrivate"
+    DependsOn:
+      - "SubnetPrivate3"
+      - "RouteTablePrivate"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/SubnetRouteTableAssociation/Public1
+  ##---------------------------------------------------------------------------------------
+  SubnetRouteTableAssociationPublic1:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref "SubnetPublic1"
+      RouteTableId: !Ref "RouteTablePublic"
+    DependsOn:
+      - "SubnetPublic1"
+      - "RouteTablePublic"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/SubnetRouteTableAssociation/Public2
+  ##---------------------------------------------------------------------------------------
+  SubnetRouteTableAssociationPublic2:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref "SubnetPublic2"
+      RouteTableId: !Ref "RouteTablePublic"
+    DependsOn:
+      - "SubnetPublic2"
+      - "RouteTablePublic"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/SubnetRouteTableAssociation/Public3
+  ##---------------------------------------------------------------------------------------
+  SubnetRouteTableAssociationPublic3:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref "SubnetPublic3"
+      RouteTableId: !Ref "RouteTablePublic"
+    DependsOn:
+      - "SubnetPublic3"
+      - "RouteTablePublic"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/SubnetRouteTableAssociation/Restricted1
+  ##---------------------------------------------------------------------------------------
+  SubnetRouteTableAssociationRestricted1:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref "SubnetRestricted1"
+      RouteTableId: !Ref "RouteTableRestricted"
+    DependsOn:
+      - "SubnetRestricted1"
+      - "RouteTableRestricted"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/SubnetRouteTableAssociation/Restricted2
+  ##---------------------------------------------------------------------------------------
+  SubnetRouteTableAssociationRestricted2:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref "SubnetRestricted2"
+      RouteTableId: !Ref "RouteTableRestricted"
+    DependsOn:
+      - "SubnetRestricted2"
+      - "RouteTableRestricted"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/SubnetRouteTableAssociation/Restricted3
+  ##---------------------------------------------------------------------------------------
+  SubnetRouteTableAssociationRestricted3:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref "SubnetRestricted3"
+      RouteTableId: !Ref "RouteTableRestricted"
+    DependsOn:
+      - "SubnetRestricted3"
+      - "RouteTableRestricted"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/VPCEndpoint/DynamodbEndpoint
+  ##---------------------------------------------------------------------------------------
+  DynamodbEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      PolicyDocument: {
+        "Version":"2012-10-17",
+        "Statement": [ {
+          "Effect":"Allow",
+          "Principal": "*",
+          "Action": "*",
+          "Resource": "*"
+        } ]
+      }
+      RouteTableIds:
+        - !Ref "RouteTablePublic"
+        - !Ref "RouteTablePrivate"
+        - !Ref "RouteTableRestricted"
+      ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".dynamodb" ] ]
+      VpcId: !Ref "VPC"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/VPCEndpoint/S3Endpoint
+  ##---------------------------------------------------------------------------------------
+  S3Endpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      PolicyDocument: {
+        "Version":"2012-10-17",
+        "Statement": [ {
+          "Effect":"Allow",
+          "Principal": "*",
+          "Action": "*",
+          "Resource": "*"
+        } ]
+      }
+      RouteTableIds:
+        - !Ref "RouteTablePublic"
+        - !Ref "RouteTablePrivate"
+        - !Ref "RouteTableRestricted"
+      ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".s3" ] ]
+      VpcId: !Ref "VPC"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/VPCGatewayAttachment/Internet
+  ##---------------------------------------------------------------------------------------
+  VPCGatewayAttachmentInternet:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      VpcId: !Ref "VPC"
+      InternetGatewayId: !Ref "InternetGateway"
+
+  ##---------------------------------------------------------------------------------------
+  # object: EC2/VPC/VPC
+  ##---------------------------------------------------------------------------------------
+  VPC:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock:          !Join [ "", [ !Ref "IpNetwork", "/", !Ref "IpNetmask" ] ]
+      EnableDnsSupport:   "true"
+      EnableDnsHostnames: "true"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "", [ !Select [0, !Split ["|", !Ref "Organization"]], " (", !Ref "AWS::Region", ")" ] ]
+        - Key: "Organization"
+          Value: !Select [0, !Split ["|", !Ref "Organization"]]
+        - Key: "Project"
+          Value: !Select [0, !Split ["|", !Ref "Project"]]
+        - Key: "Function"
+          Value: !Select [0, !Split ["|", !Ref "Function"]]
+        - Key: "Environment"
+          Value: !Select [3, !Split ["|", !Ref "Organization"]]
+        - Key: "Owner"
+          Value: !Select [0, !Split ["|", !Ref "Owner"]]
+        - Key: "Contact"
+          Value: !Select [1, !Split ["|", !Ref "Owner"]]
+
+  ##---------------------------------------------------------------------------------------
+  # object: ElastiCache/SubnetGroup/ECSubnetGroupPrivate
+  ##---------------------------------------------------------------------------------------
+  ECSubnetGroupPrivate:
+    Type: "AWS::ElastiCache::SubnetGroup"
+    Properties:
+      CacheSubnetGroupName: !Join [ "-", [ "subnet-ec", !Select [1, !Split ["|", !Ref "Organization"]], "private", !Ref "AWS::Region" ] ]
+      Description: !Join [ "", [ !Select [0, !Split ["|", !Ref "Organization"]], " - ", !Ref "AWS::Region", " - ", "ElasticCache Subnet (Private)" ] ]
+      SubnetIds:
+        - !Ref "SubnetPrivate1"
+        - !Ref "SubnetPrivate2"
+        - !Ref "SubnetPrivate3"
+
+  ##---------------------------------------------------------------------------------------
+  # object: ElastiCache/SubnetGroup/ECSubnetGroupPublic
+  ##---------------------------------------------------------------------------------------
+  ECSubnetGroupPublic:
+    Type: "AWS::ElastiCache::SubnetGroup"
+    Properties:
+      CacheSubnetGroupName: !Join [ "-", [ "subnet-ec", !Select [1, !Split ["|", !Ref "Organization"]], "public", !Ref "AWS::Region" ] ]
+      Description: !Join [ "", [ !Select [0, !Split ["|", !Ref "Organization"]], " - ", !Ref "AWS::Region", " - ", "ElasticCache Subnet (Private)" ] ]
+      SubnetIds:
+        - !Ref "SubnetPublic1"
+        - !Ref "SubnetPublic2"
+        - !Ref "SubnetPublic3"
+
+  ##---------------------------------------------------------------------------------------
+  # object: ElastiCache/SubnetGroup/ECSubnetGroupRestricted
+  ##---------------------------------------------------------------------------------------
+  ECSubnetGroupRestricted:
+    Type: "AWS::ElastiCache::SubnetGroup"
+    Properties:
+      CacheSubnetGroupName: !Join [ "-", [ "subnet-ec", !Select [1, !Split ["|", !Ref "Organization"]], "restricted", !Ref "AWS::Region" ] ]
+      Description: !Join [ "", [ !Select [0, !Split ["|", !Ref "Organization"]], " - ", !Ref "AWS::Region", " - ", "ElasticCache Subnet (Private)" ] ]
+      SubnetIds:
+        - !Ref "SubnetRestricted1"
+        - !Ref "SubnetRestricted2"
+        - !Ref "SubnetRestricted3"
+
+  ##---------------------------------------------------------------------------------------
+  # object: KMS/Alias/Data
+  ##---------------------------------------------------------------------------------------
+  KMSAliasData:
+    Type: "AWS::KMS::Alias"
+    Properties:
+      AliasName: !Join [ "", [ "alias/data-", !Select [1, !Split ["|", !Ref "Organization"]], "-", !Ref "AWS::Region" ] ]
+      TargetKeyId: !Ref "KMSKeyData"
+
+  ##---------------------------------------------------------------------------------------
+  # object: KMS/Key/Data
+  ##---------------------------------------------------------------------------------------
+  KMSKeyData:
+    Type: "AWS::KMS::Key"
+    Properties:
+      Enabled: true
+      EnableKeyRotation: true
+      Description: !Join [ "", [ "Data Encryption Key for ", !Select [0, !Split ["|", !Ref "Organization"]] ] ]
+      KeyPolicy:
+        Version: "2012-10-17"
+        Id: !Join [ "", [ "keypolicy_", !Select [1, !Split ["|", !Ref "Organization"]], "_", "_data_", !Ref "AWS::Region" ] ]
+        Statement:
+          - Sid: "Enable Root KMS Permissions"
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Join [ "", [ "arn:aws:iam::", !Ref "AWS::AccountId", ":root" ] ]
+            Action: "kms:*"
+            Resource: "*"
+      Tags:
+        - Key: "Organization"
+          Value: !Select [0, !Split ["|", !Ref "Organization"]]
+        - Key: "Project"
+          Value: !Select [0, !Split ["|", !Ref "Project"]]
+        - Key: "Function"
+          Value: "Data Encryption Key"
+        - Key: "Owner"
+          Value: !Select [0, !Split ["|", !Ref "Owner"]]
+        - Key: "Contact"
+          Value: !Select [1, !Split ["|", !Ref "Owner"]]
+
+  ##---------------------------------------------------------------------------------------
+  # object: RDS/DBSubnetGroup/DBSubnetGroupPrivate
+  ##---------------------------------------------------------------------------------------
+  DBSubnetGroupPrivate:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+      DBSubnetGroupName: !Join [ "-", [ "subnet-rds", !Select [1, !Split ["|", !Ref "Organization"]], "private", !Ref "AWS::Region" ] ]
+      DBSubnetGroupDescription: !Join [ "", [ !Select [0, !Split ["|", !Ref "Organization"]], " - ", !Ref "AWS::Region", " - ", "RDS Subnet (Private)" ] ]
+      SubnetIds:
+        - !Ref "SubnetPrivate1"
+        - !Ref "SubnetPrivate2"
+        - !Ref "SubnetPrivate3"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "subnet-rds", !Select [1, !Split ["|", !Ref "Organization"]], "private", !Ref "AWS::Region" ] ]
+
+  ##---------------------------------------------------------------------------------------
+  # object: RDS/DBSubnetGroup/DBSubnetGroupPublic
+  ##---------------------------------------------------------------------------------------
+  DBSubnetGroupPublic:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+      DBSubnetGroupName: !Join [ "-", [ "subnet-rds", !Select [1, !Split ["|", !Ref "Organization"]], "public", !Ref "AWS::Region" ] ]
+      DBSubnetGroupDescription: !Join [ "", [ !Select [0, !Split ["|", !Ref "Organization"]], " - ", !Ref "AWS::Region", " - ", "RDS Subnet (Public)" ] ]
+      SubnetIds:
+        - !Ref "SubnetPublic1"
+        - !Ref "SubnetPublic2"
+        - !Ref "SubnetPublic3"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "subnet-rds", !Select [1, !Split ["|", !Ref "Organization"]], "public", !Ref "AWS::Region" ] ]
+
+  ##---------------------------------------------------------------------------------------
+  # object: RDS/DBSubnetGroup/DBSubnetGroupRestricted
+  ##---------------------------------------------------------------------------------------
+  DBSubnetGroupRestricted:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+      DBSubnetGroupName: !Join [ "-", [ "subnet-rds", !Select [1, !Split ["|", !Ref "Organization"]], "restricted", !Ref "AWS::Region" ] ]
+      DBSubnetGroupDescription: !Join [ "", [ !Select [0, !Split ["|", !Ref "Organization"]], " - ", !Ref "AWS::Region", " - ", "RDS Subnet (Restricted)" ] ]
+      SubnetIds:
+        - !Ref "SubnetRestricted1"
+        - !Ref "SubnetRestricted2"
+        - !Ref "SubnetRestricted3"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "_", [ "subnet-rds", !Select [1, !Split ["|", !Ref "Organization"]], "restricted", !Ref "AWS::Region" ] ]
+
+##-------------------------------------------------------------------------------------------------
+Outputs:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Contact
+  ##---------------------------------------------------------------------------------------
+  Contact:
+    Description: "Details: Contact"
+    Value: !Select [1, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Contact"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Environment
+  ##---------------------------------------------------------------------------------------
+  Environment:
+    Description: "Details: Environment"
+    Value: !Select [3, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Environment"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionAbbr
+  ##---------------------------------------------------------------------------------------
+  FunctionAbbr:
+    Description: "Details: FunctionAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionName
+  ##---------------------------------------------------------------------------------------
+  FunctionName:
+    Description: "Details: FunctionName"
+    Value: !Select [0, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: LastUpdate"
+    Value: !Ref "LastUpdate"
+    Export:
+      Name: !Sub "${AWS::StackName}-LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationAbbr
+  ##---------------------------------------------------------------------------------------
+  OrganizationAbbr:
+    Description: "Details: OrganizationAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationName
+  ##---------------------------------------------------------------------------------------
+  OrganizationName:
+    Description: "Details: OrganizationName"
+    Value: !Select [0, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner"
+    Value: !Select [0, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Owner"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectAbbr
+  ##---------------------------------------------------------------------------------------
+  ProjectAbbr:
+    Description: "Details: ProjectAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectName
+  ##---------------------------------------------------------------------------------------
+  ProjectName:
+    Description: "Details: ProjectName"
+    Value: !Select [0, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Instance/KeypairDefault
+  ##---------------------------------------------------------------------------------------
+  KeypairDefault:
+    Description: "Keypair (Default)"
+    Value: !Ref "KeypairDefault"
+    Export:
+      Name: !Sub "${AWS::StackName}-KeypairDefault"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Instance/TimezoneLinux
+  ##---------------------------------------------------------------------------------------
+  TimezoneLinux:
+    Description: "Timezone (Linux)"
+    Value: !Ref "TimezoneLinux"
+    Export:
+      Name: !Sub "${AWS::StackName}-TimezoneLinux"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Instance/TimezoneWindows
+  ##---------------------------------------------------------------------------------------
+  TimezoneWindows:
+    Description: "Timezone (Windows)"
+    Value: !Ref "TimezoneWindows"
+    Export:
+      Name: !Sub "${AWS::StackName}-TimezoneWindows"
+
+  ##---------------------------------------------------------------------------------------
+  # object: KMS/KMSKeyAliasData
+  ##---------------------------------------------------------------------------------------
+  KMSKeyAliasData:
+    Description: "KMS Key: Data"
+    Value: !Join [ "", [ "arn:aws:kms:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":alias/data-", !Select [1, !Split ["|", !Ref "Organization"]], "-", !Ref "AWS::Region" ] ]
+    Export:
+      Name: !Sub "${AWS::StackName}-KMSKeyAliasData"
+
+  ##---------------------------------------------------------------------------------------
+  # object: KMS/KMSKeyData
+  ##---------------------------------------------------------------------------------------
+  KMSKeyData:
+    Description: "KMS Key: Data"
+    Value: !GetAtt "KMSKeyData.Arn"
+    Export:
+      Name: !Sub "${AWS::StackName}-KMSKeyData"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/DBSubnetGroupPrivateId
+  ##---------------------------------------------------------------------------------------
+  DBSubnetGroupPrivateId:
+    Description: "DB Subnet Group (Private): ID"
+    Value: !Ref DBSubnetGroupPrivate
+    Export:
+      Name: !Sub "${AWS::StackName}-DBSubnetGroupPrivateId"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/DBSubnetGroupPublicId
+  ##---------------------------------------------------------------------------------------
+  DBSubnetGroupPublicId:
+    Description: "DB Subnet Group (Public): ID"
+    Value: !Ref DBSubnetGroupPublic
+    Export:
+      Name: !Sub "${AWS::StackName}-DBSubnetGroupPublicID"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/DBSubnetGroupRestrictedId
+  ##---------------------------------------------------------------------------------------
+  DBSubnetGroupRestrictedId:
+    Description: "DB Subnet Group (Restricted): ID"
+    Value: !Ref DBSubnetGroupRestricted
+    Export:
+      Name: !Sub "${AWS::StackName}-DBSubnetGroupRestrictedId"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/ECSubnetGroupPrivateId
+  ##---------------------------------------------------------------------------------------
+  ECSubnetGroupPrivateId:
+    Description: "ElastiCache Subnet Group (Private): ID"
+    Value: !Ref ECSubnetGroupPrivate
+    Export:
+      Name: !Sub "${AWS::StackName}-ECSubnetGroupPrivateId"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/ECSubnetGroupPublicId
+  ##---------------------------------------------------------------------------------------
+  ECSubnetGroupPublicId:
+    Description: "ElastiCache Subnet Group (Public): ID"
+    Value: !Ref ECSubnetGroupPublic
+    Export:
+      Name: !Sub "${AWS::StackName}-ECSubnetGroupPublicId"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/ECSubnetGroupRestrictedId
+  ##---------------------------------------------------------------------------------------
+  ECSubnetGroupRestrictedId:
+    Description: "ElastiCache Subnet Group (Restricted): ID"
+    Value: !Ref ECSubnetGroupRestricted
+    Export:
+      Name: !Sub "${AWS::StackName}-ECSubnetGroupRestrictedId"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/NetworkAclDefaultId
+  ##---------------------------------------------------------------------------------------
+  NetworkAclDefaultId:
+    Description: "Network ACL (Default): ID"
+    Value: !GetAtt "VPC.DefaultNetworkAcl"
+    Export:
+      Name: !Sub "${AWS::StackName}-NetworkAclDefaultId"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/RouteTablePrivateId
+  ##---------------------------------------------------------------------------------------
+  RouteTablePrivateId:
+    Description: "Route Table: Private"
+    Value: !Ref RouteTablePrivate
+    Export:
+      Name: !Sub "${AWS::StackName}-RouteTablePrivateId"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/RouteTablePublicId
+  ##---------------------------------------------------------------------------------------
+  RouteTablePublicId:
+    Description: "Route Table: Public"
+    Value: !Ref RouteTablePublic
+    Export:
+      Name: !Sub "${AWS::StackName}-RouteTablePublicId"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/RouteTableRestrictedId
+  ##---------------------------------------------------------------------------------------
+  RouteTableRestrictedId:
+    Description: "Route Table: Restricted"
+    Value: !Ref RouteTableRestricted
+    Export:
+      Name: !Sub "${AWS::StackName}-RouteTableRestrictedId"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPrivate1AvailabilityZone
+  ##---------------------------------------------------------------------------------------
+  SubnetPrivate1AvailabilityZone:
+    Description: "Subnet (Private1): Availability Zone"
+    Value: !GetAtt "SubnetPrivate1.AvailabilityZone"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPrivate1AvailabilityZone"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPrivate1Cidr
+  ##---------------------------------------------------------------------------------------
+  SubnetPrivate1Cidr:
+    Description: "Subnet (Private1): CIDR"
+    Value: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-private-1-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-private-1-netmask" ] ]
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPrivate1Cidr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPrivate1Id
+  ##---------------------------------------------------------------------------------------
+  SubnetPrivate1Id:
+    Description: "Subnet (Private1): ID"
+    Value: !Ref "SubnetPrivate1"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPrivate1Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPrivate2AvailabilityZone
+  ##---------------------------------------------------------------------------------------
+  SubnetPrivate2AvailabilityZone:
+    Description: "Subnet (Private2): Availability Zone"
+    Value: !GetAtt "SubnetPrivate2.AvailabilityZone"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPrivate2AvailabilityZone"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPrivate2Cidr
+  ##---------------------------------------------------------------------------------------
+  SubnetPrivate2Cidr:
+    Description: "Subnet (Private2): CIDR"
+    Value: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-private-2-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-private-2-netmask" ] ]
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPrivate2Cidr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPrivate2Id
+  ##---------------------------------------------------------------------------------------
+  SubnetPrivate2Id:
+    Description: "Subnet (Private2): ID"
+    Value: !Ref "SubnetPrivate2"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPrivate2Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPrivate3AvailabilityZone
+  ##---------------------------------------------------------------------------------------
+  SubnetPrivate3AvailabilityZone:
+    Description: "Subnet (Private3): Availability Zone"
+    Value: !GetAtt "SubnetPrivate3.AvailabilityZone"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPrivate3AvailabilityZone"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPrivate3Cidr
+  ##---------------------------------------------------------------------------------------
+  SubnetPrivate3Cidr:
+    Description: "Subnet (Private3): CIDR"
+    Value: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-private-3-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-private-3-netmask" ] ]
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPrivate3Cidr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPrivate3Id
+  ##---------------------------------------------------------------------------------------
+  SubnetPrivate3Id:
+    Description: "Subnet (Private3): ID"
+    Value: !Ref "SubnetPrivate3"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPrivate3Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPublic1AvailabilityZone
+  ##---------------------------------------------------------------------------------------
+  SubnetPublic1AvailabilityZone:
+    Description: "Subnet (Public1): Availability Zone"
+    Value: !GetAtt "SubnetPublic1.AvailabilityZone"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPublic1AvailabilityZone"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPublic1Cidr
+  ##---------------------------------------------------------------------------------------
+  SubnetPublic1Cidr:
+    Description: "Subnet (Public1): CIDR"
+    Value: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-public-1-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-public-1-netmask" ] ]
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPublic1Cidr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPublic1Id
+  ##---------------------------------------------------------------------------------------
+  SubnetPublic1Id:
+    Description: "Subnet (Public1): ID"
+    Value: !Ref "SubnetPublic1"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPublic1Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPublic2AvailabilityZone
+  ##---------------------------------------------------------------------------------------
+  SubnetPublic2AvailabilityZone:
+    Description: "Subnet (Public2): Availability Zone"
+    Value: !GetAtt "SubnetPublic2.AvailabilityZone"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPublic2AvailabilityZone"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPublic2Cidr
+  ##---------------------------------------------------------------------------------------
+  SubnetPublic2Cidr:
+    Description: "Subnet (Public2): CIDR"
+    Value: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-public-2-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-public-2-netmask" ] ]
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPublic2Cidr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPublic2Id
+  ##---------------------------------------------------------------------------------------
+  SubnetPublic2Id:
+    Description: "Subnet (Public2): ID"
+    Value: !Ref "SubnetPublic2"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPublic2Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPublic3AvailabilityZone
+  ##---------------------------------------------------------------------------------------
+  SubnetPublic3AvailabilityZone:
+    Description: "Subnet (Public3): Availability Zone"
+    Value: !GetAtt "SubnetPublic3.AvailabilityZone"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPublic3AvailabilityZone"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPublic3Cidr
+  ##---------------------------------------------------------------------------------------
+  SubnetPublic3Cidr:
+    Description: "Subnet (Public3): CIDR"
+    Value: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-public-3-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-public-3-netmask" ] ]
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPublic3Cidr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetPublic3Id
+  ##---------------------------------------------------------------------------------------
+  SubnetPublic3Id:
+    Description: "Subnet (Public3): ID"
+    Value: !Ref "SubnetPublic3"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPublic3Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetRestricted1AvailabilityZone
+  ##---------------------------------------------------------------------------------------
+  SubnetRestricted1AvailabilityZone:
+    Description: "Subnet (Restricted1): Availability Zone"
+    Value: !GetAtt "SubnetRestricted1.AvailabilityZone"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetRestricted1AvailabilityZone"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetRestricted1Cidr
+  ##---------------------------------------------------------------------------------------
+  SubnetRestricted1Cidr:
+    Description: "Subnet (Restricted1): CIDR"
+    Value: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-restricted-1-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-restricted-1-netmask" ] ]
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetRestricted1Cidr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetRestricted1Id
+  ##---------------------------------------------------------------------------------------
+  SubnetRestricted1Id:
+    Description: "Subnet (Restricted1): ID"
+    Value: !Ref "SubnetRestricted1"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetRestricted1Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetRestricted2AvailabilityZone
+  ##---------------------------------------------------------------------------------------
+  SubnetRestricted2AvailabilityZone:
+    Description: "Subnet (Restricted2): Availability Zone"
+    Value: !GetAtt "SubnetRestricted2.AvailabilityZone"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetRestricted2AvailabilityZone"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetRestricted2Cidr
+  ##---------------------------------------------------------------------------------------
+  SubnetRestricted2Cidr:
+    Description: "Subnet (Restricted2): CIDR"
+    Value: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-restricted-2-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-restricted-2-netmask" ] ]
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetRestricted2Cidr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetRestricted2Id
+  ##---------------------------------------------------------------------------------------
+  SubnetRestricted2Id:
+    Description: "Subnet (Restricted2): ID"
+    Value: !Ref "SubnetRestricted2"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetRestricted2Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetRestricted3AvailabilityZone
+  ##---------------------------------------------------------------------------------------
+  SubnetRestricted3AvailabilityZone:
+    Description: "Subnet (Restricted3): Availability Zone"
+    Value: !GetAtt "SubnetRestricted3.AvailabilityZone"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetRestricted3AvailabilityZone"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetRestricted3Cidr
+  ##---------------------------------------------------------------------------------------
+  SubnetRestricted3Cidr:
+    Description: "Subnet (Restricted3): CIDR"
+    Value: !Join [ "", [ !GetAtt "VPCSubnetCIDRResults.subnet-restricted-3-cidrstart", "/", !GetAtt "VPCSubnetCIDRResults.subnet-restricted-3-netmask" ] ]
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetRestricted3Cidr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Network/SubnetRestricted3Id
+  ##---------------------------------------------------------------------------------------
+  SubnetRestricted3Id:
+    Description: "Subnet (Restricted3): ID"
+    Value: !Ref "SubnetRestricted3"
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetRestricted3Id"
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/S3BucketArtifacts_VPC
+  ##---------------------------------------------------------------------------------------
+  S3BucketArtifacts:
+    Description: "S3 Bucket: Artifacts"
+    Value: !GetAtt "StackReferenceResultsInitialize.S3BucketArtifacts"
+    Export:
+      Name: !Sub "${AWS::StackName}-S3BucketArtifacts"
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/S3BucketLogs_VPC
+  ##---------------------------------------------------------------------------------------
+  S3BucketLogs:
+    Description: "S3 Bucket: Logs"
+    Value: !GetAtt "StackReferenceResultsInitialize.S3BucketLogs"
+    Export:
+      Name: !Sub "${AWS::StackName}-S3BucketLogs"
+
+  ##---------------------------------------------------------------------------------------
+  # object: SecurityGroup/SecurityGroupDefaultId
+  ##---------------------------------------------------------------------------------------
+  SecurityGroupDefaultId:
+    Description: "Security Group (Default): ID"
+    Value: !GetAtt "VPC.DefaultSecurityGroup"
+    Export:
+      Name: !Sub "${AWS::StackName}-SecurityGroupDefaultId"
+
+  ##---------------------------------------------------------------------------------------
+  # object: VPC/VPCCidr
+  ##---------------------------------------------------------------------------------------
+  VPCCidr:
+    Description: "VPC: CIDR"
+    Value: !Join [ "", [ !Ref "IpNetwork", "/", !Ref "IpNetmask" ] ]
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCCidr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: VPC/VPCId
+  ##---------------------------------------------------------------------------------------
+  VPCId:
+    Description: "VPC: ID"
+    Value: !Ref "VPC"
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCId"
+
+  ##---------------------------------------------------------------------------------------
+  # object: VPC/VPCName
+  ##---------------------------------------------------------------------------------------
+  VPCName:
+    Description: "VPC: Name"
+    Value: !Join [ "", [ !Select [0, !Split ["|", !Ref "Organization"]], " (", !Ref "AWS::Region", ")" ] ]
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCName"
+

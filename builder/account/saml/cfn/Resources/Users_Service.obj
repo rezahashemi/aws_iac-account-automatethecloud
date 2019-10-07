@@ -1,0 +1,63 @@
+##-------------------------------------------------------------------------------------------------
+# object:  Users_Service
+# class:   resource
+##-------------------------------------------------------------------------------------------------
+
+##---------------------------------------------------------------------------------------
+UserServiceAppServices:
+  Type: "AWS::IAM::User"
+  Properties:
+    UserName: "service-appservices"
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AdministratorAccess
+
+##---------------------------------------------------------------------------------------
+UserServiceBeyondInternal:
+  Type: "AWS::IAM::User"
+  Properties:
+    UserName: "service-beyondinternal"
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AdministratorAccess
+
+##---------------------------------------------------------------------------------------
+UserServiceBeyondOne:
+  Type: "AWS::IAM::User"
+  Properties:
+    UserName: "service-beyondone"
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AdministratorAccess
+
+##---------------------------------------------------------------------------------------
+UserServiceChipIn:
+  Type: "AWS::IAM::User"
+  Properties:
+    UserName: "service-chipin"
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AdministratorAccess
+
+##---------------------------------------------------------------------------------------
+UserServiceMarketing:
+  Type: "AWS::IAM::User"
+  Properties:
+    UserName: "service-marketing"
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AdministratorAccess
+
+##---------------------------------------------------------------------------------------
+UserServiceSharedServices:
+  Type: "AWS::IAM::User"
+  Properties:
+    UserName: "service-sharedservices"
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AdministratorAccess
+
+##---------------------------------------------------------------------------------------
+UserServiceQRadar:
+  Type: "AWS::IAM::User"
+  Properties:
+    UserName: "service-qradar"
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/SecurityAudit
+      - arn:aws:iam::aws:policy/AWSCloudTrailReadOnlyAccess
+      - arn:aws:iam::aws:policy/CloudWatchLogsReadOnlyAccess
+      - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess

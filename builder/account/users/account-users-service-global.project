@@ -1,0 +1,27 @@
+Name:                                       account-users-service-global
+Description:                                Account - Users - Service - global
+Updated:                                    2019/09/26 22:20:00 EST
+
+Details:
+  Project:                                  Account|account
+  Function:                                 Users - Service|users-service
+  Organization:                             Account|account|us-east-1|prd
+  Account:                                  AutomateTheCloud|atc|480685085376
+  Owner:                                    David Singer|aws-ops@automatethe.cloud
+  DeploymentTimeout:                        15
+
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  #-- Stack Reference -------------------------------------------------------------------
+  StackReferenceInitialize:                 account-initialize-global
+
+##-------------------------------------------------------------------------------------------------
+Paradigm:
+  Templates:
+    - StackReference/Initialize
+  Parameters:
+  Mappings:
+  Conditions:
+  Resources:
+    - Project/Users_Service
+  Outputs:

@@ -1,0 +1,20 @@
+[
+  { "ParameterKey": "Account", "ParameterValue": "AutomateTheCloud|atc|480685085376" },
+  { "ParameterKey": "EnableGuardDuty", "ParameterValue": "false" },
+  { "ParameterKey": "Function", "ParameterValue": "Initialize us-east-1|initialize-us-east-1" },
+  { "ParameterKey": "GuardDutyFindingPublishingFrequency", "ParameterValue": "SIX_HOURS" },
+  { "ParameterKey": "LastUpdate", "ParameterValue": "2019-09-26 18:49:06.216 UTC" },
+  { "ParameterKey": "LogRetentionAMILookupAmazonLinux2", "ParameterValue": "30" },
+  { "ParameterKey": "LogRetentionAMILookupCustom", "ParameterValue": "30" },
+  { "ParameterKey": "LogRetentionEC2LinuxAuthentication", "ParameterValue": "365" },
+  { "ParameterKey": "LogRetentionEC2LinuxHIDSAlerts", "ParameterValue": "365" },
+  { "ParameterKey": "LogRetentionEC2LinuxHostMessages", "ParameterValue": "365" },
+  { "ParameterKey": "LogRetentionNetworkLBIpAddress", "ParameterValue": "30" },
+  { "ParameterKey": "LogRetentionStackReference", "ParameterValue": "7" },
+  { "ParameterKey": "LogRetentionVPCSubnetCIDR", "ParameterValue": "3653" },
+  { "ParameterKey": "Organization", "ParameterValue": "Account|account|us-east-1|global" },
+  { "ParameterKey": "Owner", "ParameterValue": "David Singer|aws-ops@automatethe.cloud" },
+  { "ParameterKey": "Project", "ParameterValue": "Account|account" },
+  { "ParameterKey": "S3BucketArtifactsRegionName", "ParameterValue": "artifacts-us-east-1-480685085376" },
+  { "ParameterKey": "S3BucketLogsRegionName", "ParameterValue": "logs-us-east-1-480685085376" } 
+]

@@ -1,0 +1,41 @@
+Name:                                       account-initialize-global
+Description:                                Account - Initialize - global
+Updated:                                    2019/10/04 14:40:00 EST
+
+Details:
+  Project:                                  Account|account
+  Function:                                 Initialize Global|initialize-global
+  Organization:                             Account|account|us-east-1|global
+  Account:                                  AutomateTheCloud|atc|480685085376
+  Owner:                                    David Singer|aws-ops@automatethe.cloud
+  DeploymentTimeout:                        45
+
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  #-- S3 --------------------------------------------------------------------------------
+  S3BucketAuditName:                        audit-global-480685085376
+  S3BucketLogsGlobalName:                   logs-global-480685085376
+
+  #-- CloudTrail ------------------------------------------------------------------------
+  LogRetentionCloudTrail:                   365
+
+  # -- IAM ------------------------------------------------------------------------------
+  MaxPasswordAge:                           90
+  RequireUppercaseCharacters:               true
+  RequireLowercaseCharacters:               true
+  RequireSymbols:                           true
+  RequireNumbers:                           true
+  MinimumPasswordLength:                    14
+  PasswordReusePrevention:                  24
+  AllowUsersToChangePassword:               true
+  HardExpiry:                               false
+
+##-------------------------------------------------------------------------------------------------
+Paradigm:
+  Templates:
+    - Account/Initialize_Global
+  Parameters:
+  Mappings:
+  Conditions:
+  Resources:
+  Outputs:

@@ -1,0 +1,1617 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Account - Compliance - global"
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Account
+  ##---------------------------------------------------------------------------------------
+  Account:
+    Description: "Details: Account (AccountName | AccountAbbr | AccountNumber)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Function
+  ##---------------------------------------------------------------------------------------
+  Function:
+    Description: "Details: Function (FunctionName | FunctionAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: Last Update"
+    Type: String
+    Default: 0
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Organization
+  ##---------------------------------------------------------------------------------------
+  Organization:
+    Description: "Details: Organization (OrganizationName | OrganizationAbbr | region | environment)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner (Owner | Contact)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Project
+  ##---------------------------------------------------------------------------------------
+  Project:
+    Description: "Details: Project (ProjectName | ProjectAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/SNSSubscriptionEmail1
+  ##---------------------------------------------------------------------------------------
+  SNSSubscriptionEmail1:
+    Description: "SNS Subscription: Email (1)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/SNSSubscriptionEmail2
+  ##---------------------------------------------------------------------------------------
+  SNSSubscriptionEmail2:
+    Description: "SNS Subscription: Email (2)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/SNSSubscriptionEmail3
+  ##---------------------------------------------------------------------------------------
+  SNSSubscriptionEmail3:
+    Description: "SNS Subscription: Email (3)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/SNSSubscriptionEmail4
+  ##---------------------------------------------------------------------------------------
+  SNSSubscriptionEmail4:
+    Description: "SNS Subscription: Email (4)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: StackReference/StackReferenceInitialize
+  ##---------------------------------------------------------------------------------------
+  StackReferenceInitialize:
+    Description: "Stack Reference: Initialize"
+    Type: String
+
+##-------------------------------------------------------------------------------------------------
+Conditions:
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/ExistsSNSSubscriptionEmail1
+  ##---------------------------------------------------------------------------------------
+  ExistsSNSSubscriptionEmail1:
+    !Not [!Equals [!Ref SNSSubscriptionEmail1, ""]]
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/ExistsSNSSubscriptionEmail2
+  ##---------------------------------------------------------------------------------------
+  ExistsSNSSubscriptionEmail2:
+    !Not [!Equals [!Ref SNSSubscriptionEmail2, ""]]
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/ExistsSNSSubscriptionEmail3
+  ##---------------------------------------------------------------------------------------
+  ExistsSNSSubscriptionEmail3:
+    !Not [!Equals [!Ref SNSSubscriptionEmail3, ""]]
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/ExistsSNSSubscriptionEmail4
+  ##---------------------------------------------------------------------------------------
+  ExistsSNSSubscriptionEmail4:
+    !Not [!Equals [!Ref SNSSubscriptionEmail4, ""]]
+
+##-------------------------------------------------------------------------------------------------
+Resources:
+  ##---------------------------------------------------------------------------------------
+  # object: CloudWatch/Alarm/ConsoleLoginFailures
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.6: Ensure a log metric filter and alarm exist for AWS Management Console authentication failures
+  ##---------------------------------------------------------------------------------------
+  AlarmConsoleLoginFailures:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      AlarmName: "compliance_console-login-failures"
+      AlarmDescription: "Compliance: Console login failures over a five-minute period"
+      AlarmActions:
+        - !Ref "SNSTopicAudit"
+      MetricName: "ConsoleLoginFailures"
+      Namespace: "CloudTrailMetrics"
+      ComparisonOperator: "GreaterThanOrEqualToThreshold"
+      EvaluationPeriods: "1"
+      Period: "300"
+      Statistic: "Sum"
+      Threshold: "1"
+      TreatMissingData: "notBreaching"
+    DependsOn:
+      - "MetricFilterConsoleLoginFailures"
+
+  ##---------------------------------------------------------------------------------------
+  # object: CloudWatch/Alarm/ConsoleSigninWithoutMFA
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.2: Ensure a log metric filter and alarm exist for Management Console sign-in without MFA
+  ##---------------------------------------------------------------------------------------
+  AlarmConsoleSigninWithoutMFA:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      AlarmName: "compliance_console-sign-in-without-mfa"
+      AlarmDescription: "Compliance: Console Sign-in without MFA"
+      AlarmActions:
+        - !Ref "SNSTopicAudit"
+      MetricName: "SigninWithoutMFA"
+      Namespace: "CloudTrailMetrics"
+      ComparisonOperator: "GreaterThanOrEqualToThreshold"
+      EvaluationPeriods: "1"
+      Period: "60"
+      Statistic: "Sum"
+      Threshold: "1"
+      TreatMissingData: "notBreaching"
+    DependsOn:
+      - "MetricFilterConsoleSigninWithoutMFA"
+
+  ##---------------------------------------------------------------------------------------
+  # object: CloudWatch/Alarm/KMSCustomerKeyDeletion
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.7: Ensure a log metric filter and alarm exist for disabling or scheduled deletion of customer created CMKs
+  ##---------------------------------------------------------------------------------------
+  AlarmKMSCustomerKeyDeletion:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      AlarmName: "compliance_kms-key-disabled-or-scheduled-for-deletion"
+      AlarmDescription: "Compliance: Disabling or scheduled deletion of customer-managed KMS keys"
+      AlarmActions:
+        - !Ref "SNSTopicAudit"
+      MetricName: "KMSCustomerKeyDeletion"
+      Namespace: "CloudTrailMetrics"
+      ComparisonOperator: "GreaterThanOrEqualToThreshold"
+      EvaluationPeriods: "1"
+      Period: "60"
+      Statistic: "Sum"
+      Threshold: "1"
+      TreatMissingData: "notBreaching"
+    DependsOn:
+      - "MetricFilterKMSCustomerKeyDeletion"
+
+  ##---------------------------------------------------------------------------------------
+  # object: CloudWatch/Alarm/RootUserEventCount
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.1: Avoid the use of the "root" account
+  #     - 3.3: Ensure a log metric filter and alarm exist for usage of "root" account
+  ##---------------------------------------------------------------------------------------
+  AlarmRootUserEventCount:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      AlarmName: "compliance_iam-root-user-activity"
+      AlarmDescription: "Compliance: IAM Root User activity detected"
+      AlarmActions:
+        - !Ref "SNSTopicAudit"
+      MetricName: "RootUserEventCount"
+      Namespace: "CloudTrailMetrics"
+      ComparisonOperator: "GreaterThanOrEqualToThreshold"
+      EvaluationPeriods: "1"
+      Period: "60"
+      Statistic: "Sum"
+      Threshold: "1"
+      TreatMissingData: "notBreaching"
+    DependsOn:
+      - "MetricFilterRootUserEventCount"
+
+  ##---------------------------------------------------------------------------------------
+  # object: CloudWatch/Alarm/UnauthorizedAttemptCount
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.1: Ensure a log metric filter and alarm exist for unauthorized API calls
+  ##---------------------------------------------------------------------------------------
+  AlarmUnauthorizedAttemptCount:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      AlarmName: "compliance_unauthorized-attempt-count"
+      AlarmDescription: "Compliance: Multiple unauthorized actions or logins attempted"
+      AlarmActions:
+        - !Ref "SNSTopicAudit"
+      MetricName: "UnauthorizedAttemptCount"
+      Namespace: "CloudTrailMetrics"
+      ComparisonOperator: "GreaterThanOrEqualToThreshold"
+      EvaluationPeriods: "1"
+      Period: "60"
+      Statistic: "Sum"
+      Threshold: "5"
+      TreatMissingData: "notBreaching"
+    DependsOn:
+      - "MetricFilterUnauthorizedAttemptCount"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSCloudTrailCloudWatchLogsEnabled
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 2.4: Ensure CloudTrail trails are integrated with CloudWatch Logs
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSCloudTrailCloudWatchLogsEnabled:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-cloudtrail-cloudwatch-logs-enabled"
+      Description: "Checks whether AWS CloudTrail trails are configured to send logs to Amazon CloudWatch logs"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: AWS
+        SourceIdentifier: "CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSCloudTrailEnabled
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 2.1: Ensure CloudTrail is enabled in all regions
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSCloudTrailEnabled:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-cloudtrail-enabled"
+      Description: "Checks whether AWS CloudTrail is enabled in your AWS account"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: AWS
+        SourceIdentifier: "CLOUD_TRAIL_ENABLED"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSCloudTrailEncryptionEnabled
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 2.7: Ensure CloudTrail logs are encrypted at rest using KMS CMKs
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSCloudTrailEncryptionEnabled:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-cloudtrail-encryption-enabled"
+      Description: "Checks whether AWS CloudTrail is configured to use the server side encryption (SSE) AWS Key Management Service (AWS KMS) customer master key (CMK) encryption"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: AWS
+        SourceIdentifier: "CLOUD_TRAIL_ENCRYPTION_ENABLED"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSCloudTrailLogFileValidationEnabled
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 2.2: Ensure CloudTrail log file validation is enabled
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSCloudTrailLogFileValidationEnabled:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-cloudtrail-log-file-validation-enabled"
+      Description: "Checks whether AWS CloudTrail creates a signed digest file with logs"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: AWS
+        SourceIdentifier: "CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSIAMPasswordPolicy
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.5: Ensure IAM password policy requires at least one uppercase letter
+  #     - 1.6: Ensure IAM password policy require at least one lowercase letter
+  #     - 1.7: Ensure IAM password policy require at least one symbol
+  #     - 1.8: Ensure IAM password policy require at least one number
+  #     - 1.9: Ensure IAM password policy requires minimum length of 14 or greater
+  #     - 1.10: Ensure IAM password policy prevents password reuse
+  #     - 1.11: Ensure IAM password policy expires passwords within 90 days or less
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSIAMPasswordPolicy:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-iam-password-policy"
+      Description: "Checks whether the account password policy for IAM users meets the specified requirements"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      InputParameters:
+        RequireUppercaseCharacters: "true"
+        RequireLowercaseCharacters: "true"
+        RequireSymbols: "true"
+        RequireNumbers: "true"
+        MinimumPasswordLength: "14"
+        PasswordReusePrevention: "24"
+        MaxPasswordAge: "90"
+      Source:
+        Owner: AWS
+        SourceIdentifier: "IAM_PASSWORD_POLICY"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSIAMRootAccessKeyCheck
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.12: Ensure no root account access key exists
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSIAMRootAccessKeyCheck:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-iam-root-access-key-check"
+      Description: "Checks whether the root user access key is available"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: AWS
+        SourceIdentifier: "IAM_ROOT_ACCESS_KEY_CHECK"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSIAMUserNoPoliciesCheck
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.16: Ensure IAM policies are attached only to groups or roles
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSIAMUserNoPoliciesCheck:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-iam-user-no-policies-check"
+      Description: "Checks that none of your IAM users have policies attached. IAM users must inherit permissions from IAM groups or roles"
+      Scope:
+        ComplianceResourceTypes:
+          - 'AWS::IAM::User'
+      Source:
+        Owner: AWS
+        SourceIdentifier: "IAM_USER_NO_POLICIES_CHECK"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSMFAEnabledForIAMConsoleAccess
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.2: Ensure multi-factor authentication (MFA) is enabled for all IAM users that have a console password
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSMFAEnabledForIAMConsoleAccess:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-mfa-enabled-for-iam-console-access"
+      Description: "Checks whether AWS Multi-Factor Authentication (MFA) is enabled for all AWS Identity and Access Management (IAM) users that use a console password"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: AWS
+        SourceIdentifier: "MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSMultiRegionCloudTrailEnabled
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 2.1: Ensure CloudTrail is enabled in all regions
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSMultiRegionCloudTrailEnabled:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-multi-region-cloudtrail-enabled"
+      Description: "Checks that there is at least one multi-region AWS CloudTrail"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: AWS
+        SourceIdentifier: "MULTI_REGION_CLOUD_TRAIL_ENABLED"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSRootAccountHardwareMFAEnabled
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.14: Ensure hardware MFA is enabled for the "root" account
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSRootAccountHardwareMFAEnabled:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-root-account-hardware-mfa-enabled"
+      Description: "Checks whether your AWS account is enabled to use multi-factor authentication (MFA) hardware device to sign in with root credentials"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: AWS
+        SourceIdentifier: "ROOT_ACCOUNT_HARDWARE_MFA_ENABLED"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/AWSRootAccountMFAEnabled
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.13: Ensure MFA is enabled for the "root" account
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleAWSRootAccountMFAEnabled:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "aws-root-account-mfa-enabled"
+      Description: "Checks whether the root user of your AWS account requires multi-factor authentication for console sign-in"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: AWS
+        SourceIdentifier: "ROOT_ACCOUNT_MFA_ENABLED"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/ConfigEvaluateCloudTrailBucket
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 2.3: Ensure the S3 bucket CloudTrail logs to is not publicly accessible
+  #     - 2.6: Ensure S3 bucket access logging is enabled on the CloudTrail S3 bucket
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleConfigEvaluateCloudTrailBucket:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "config-evaluate-cloudtrail-bucket"
+      Description: "Evaluates whether the CloudTrail S3 bucket has appropriate security properties"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: CUSTOM_LAMBDA
+        SourceDetails:
+          - EventSource: aws.config
+            MessageType: ScheduledNotification
+        SourceIdentifier: !GetAtt "LambdaFunctionConfigEvaluateCloudTrailBucket.Arn"
+    DependsOn:
+      - "LambdaPermissionConfigEvaluateCloudTrailBucket"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/ConfigEvaluateConfigInAllRegions
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 2.5: Ensure AWS Config is enabled in all regions
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleConfigEvaluateConfigInAllRegions:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "config-evaluate-config-in-all-regions"
+      Description: "Evaluates whether Config is enabled in all regions"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: CUSTOM_LAMBDA
+        SourceDetails:
+          - EventSource: aws.config
+            MessageType: ScheduledNotification
+        SourceIdentifier: !GetAtt "LambdaFunctionConfigEvaluateConfigInAllRegions.Arn"
+    DependsOn:
+      - "LambdaPermissionConfigEvaluateConfigInAllRegions"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/ConfigEvaluatePolicyPermissions
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.22: Ensure IAM policies that allow full "*:*" administrative privileges are not created
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleConfigEvaluatePolicyPermissions:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "config-evaluate-policy-permissions"
+      Description: "Evaluates whether IAM policies contain *.* statements"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: CUSTOM_LAMBDA
+        SourceDetails:
+          - EventSource: aws.config
+            MessageType: ScheduledNotification
+        SourceIdentifier: !GetAtt "LambdaFunctionConfigEvaluatePolicyPermissions.Arn"
+    DependsOn:
+      - "LambdaPermissionConfigEvaluatePolicyPermissions"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigRule/ConfigInstanceRoleUse
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.19: Ensure IAM instance roles are used for AWS resource access from instances
+  ##---------------------------------------------------------------------------------------
+  ConfigRuleConfigInstanceRoleUse:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "config-instance-role-use"
+      Description: "Evaluates whether instances use instance roles"
+      MaximumExecutionFrequency: "TwentyFour_Hours"
+      Source:
+        Owner: CUSTOM_LAMBDA
+        SourceDetails:
+          - EventSource: aws.config
+            MessageType: ScheduledNotification
+        SourceIdentifier: !GetAtt "LambdaFunctionConfigInstanceRoleUse.Arn"
+    DependsOn:
+      - "LambdaPermissionConfigInstanceRoleUse"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Custom/StackReferenceResultsInitialize
+  ##---------------------------------------------------------------------------------------
+  StackReferenceResultsInitialize:
+    Type: "Custom::StackReferenceResultsInitialize"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !Join [ "", [ "arn:aws:lambda:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":function:stack-reference" ] ]
+      "Region": !Ref "AWS::Region"
+      "StackName": !Ref "StackReferenceInitialize"
+      "LastUpdate": !Ref "LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Events/Rule/AuditDetectCloudTrailChanges
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.5: Ensure a log metric filter and alarm exist for CloudTrail configuration changes
+  ##---------------------------------------------------------------------------------------
+  EventsRuleAuditDetectCloudTrailChanges:
+    Type: "AWS::Events::Rule"
+    Properties:
+      Name: "audit-detect-cloudtrail-changes"
+      Description: "Publishes formatted CloudTrail change events to an SNS topic"
+      EventPattern:
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - "cloudtrail.amazonaws.com"
+          eventName:
+            - "StopLogging"
+            - "DeleteTrail"
+            - "UpdateTrail"
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt "LambdaFunctionAuditFormatCloudWatchEvent.Arn"
+          Id: "TargetFunctionV1"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Events/Rule/AuditDetectConfigChanges
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.9: Ensure a log metric filter and alarm exist for AWS Config configuration changes
+  ##---------------------------------------------------------------------------------------
+  EventsRuleAuditDetectConfigChanges:
+    Type: "AWS::Events::Rule"
+    Properties:
+      Name: "audit-detect-config-changes"
+      Description: "Publishes formatted Config change events to an SNS topic"
+      EventPattern:
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - "config.amazonaws.com"
+          eventName:
+            - "PutConfigurationRecorder"
+            - "StopConfigurationRecorder"
+            - "DeleteDeliveryChannel"
+            - "PutDeliveryChannel"
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt "LambdaFunctionAuditFormatCloudWatchEvent.Arn"
+          Id: "TargetFunctionV1"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Events/Rule/AuditDetectNetworkACLChanges
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.11: Ensure a log metric filter and alarm exist for changes to Network Access Control Lists (NACL)
+  ##---------------------------------------------------------------------------------------
+  EventsRuleAuditDetectNetworkACLChanges:
+    Type: "AWS::Events::Rule"
+    Properties:
+      Name: "audit-detect-network-acl-changes"
+      Description: "Publishes formatted network ACL change events to an SNS topic"
+      EventPattern:
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - "ec2.amazonaws.com"
+          eventName:
+            - "CreateNetworkAcl"
+            - "CreateNetworkAclEntry"
+            - "DeleteNetworkAcl"
+            - "DeleteNetworkAclEntry"
+            - "ReplaceNetworkAclEntry"
+            - "ReplaceNetworkAclAssociation"
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt "LambdaFunctionAuditFormatCloudWatchEvent.Arn"
+          Id: "TargetFunctionV1"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Events/Rule/AuditDetectNetworkChangeEvents
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.12: Ensure a log metric filter and alarm exist for changes to network gateways
+  #     - 3.13: Ensure a log metric filter and alarm exist for route table changes
+  #     - 3.14: Ensure a log metric filter and alarm exist for VPC changes
+  ##---------------------------------------------------------------------------------------
+  EventsRuleAuditDetectNetworkChangeEvents:
+    Type: "AWS::Events::Rule"
+    Properties:
+      Name: "audit-detect-network-change-events"
+      Description: "Publishes formatted network change events to an SNS topic"
+      EventPattern:
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - "ec2.amazonaws.com"
+          eventName:
+            - "AttachInternetGateway"
+            - "AssociateRouteTable"
+            - "CreateCustomerGateway"
+            - "CreateInternetGateway"
+            - "CreateRoute"
+            - "CreateRouteTable"
+            - "DeleteCustomerGateway"
+            - "DeleteInternetGateway"
+            - "DeleteRoute"
+            - "DeleteRouteTable"
+            - "DeleteDhcpOptions"
+            - "DetachInternetGateway"
+            - "DisassociateRouteTable"
+            - "ReplaceRoute"
+            - "ReplaceRouteTableAssociation"
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt "LambdaFunctionAuditFormatCloudWatchEvent.Arn"
+          Id: "TargetFunctionV1"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Events/Rule/AuditDetectS3BucketPolicyChanges
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.8: Ensure a log metric filter and alarm exist for S3 bucket policy changes
+  ##---------------------------------------------------------------------------------------
+  EventsRuleAuditDetectS3BucketPolicyChanges:
+    Type: "AWS::Events::Rule"
+    Properties:
+      Name: "audit-detect-s3-bucket-policy-changes"
+      Description: "Publishes formatted S3 bucket policy change events to an SNS topic"
+      EventPattern:
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - "s3.amazonaws.com"
+          eventName:
+            - "PutBucketAcl"
+            - "PutBucketPolicy"
+            - "PutBucketCors"
+            - "PutBucketLifecycle"
+            - "PutBucketReplication"
+            - "DeleteBucketPolicy"
+            - "DeleteBucketCors"
+            - "DeleteBucketLifecycle"
+            - "DeleteBucketReplication"
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt "LambdaFunctionAuditFormatCloudWatchEvent.Arn"
+          Id: "TargetFunctionV1"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Events/Rule/AuditDetectSecurityGroupChanges
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.10: Ensure a log metric filter and alarm exist for security group changes
+  ##---------------------------------------------------------------------------------------
+  EventsRuleAuditDetectSecurityGroupChanges:
+    Type: "AWS::Events::Rule"
+    Properties:
+      Name: "audit-detect-securitygroup-changes"
+      Description: "Publishes formatted Security Group change events to an SNS topic"
+      EventPattern:
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - "ec2.amazonaws.com"
+          eventName:
+            - "AuthorizeSecurityGroupIngress"
+            - "AuthorizeSecurityGroupEgress"
+            - "RevokeSecurityGroupIngress"
+            - "RevokeSecurityGroupEgress"
+            - "CreateSecurityGroup"
+            - "DeleteSecurityGroup"
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt "LambdaFunctionAuditFormatCloudWatchEvent.Arn"
+          Id: "TargetFunctionV1"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Events/Rule/AuditIAMPolicyChanges
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.4: Ensure a log metric filter and alarm exist for IAM policy changes
+  ##---------------------------------------------------------------------------------------
+  EventsRuleAuditIAMPolicyChanges:
+    Type: "AWS::Events::Rule"
+    Properties:
+      Name: "audit-iam-policy-changes"
+      Description: "Publishes formatted IAM policy change events to an SNS topic"
+      EventPattern:
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - "iam.amazonaws.com"
+          eventName:
+            - "CreateAccessKey"
+            - "DeleteAccessKey"
+            - "DeleteRolePolicy"
+            - "DeleteUserPolicy"
+            - "PutGroupPolicy"
+            - "PutRolePolicy"
+            - "PutUserPolicy"
+            - "CreatePolicy"
+            - "DeletePolicy"
+            - "CreatePolicyVersion"
+            - "DeletePolicyVersion"
+            - "AttachRolePolicy"
+            - "DetachRolePolicy"
+            - "AttachUserPolicy"
+            - "DetachUserPolicy"
+            - "AttachGroupPolicy"
+            - "DetachGroupPolicy"
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt "LambdaFunctionAuditFormatCloudWatchEvent.Arn"
+          Id: "TargetFunctionV1"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Events/Rule/DisableUnusedCredentials
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.3: Ensure credentials unused for 90 days or greater are disabled
+  #     - 1.4: Ensure access keys are rotated every 90 days or less
+  ##---------------------------------------------------------------------------------------
+  EventsRuleDisableUnusedCredentials:
+    Type: "AWS::Events::Rule"
+    Properties:
+      Name: "disable-unused-credentials"
+      Description: "Deletes unused passwords and disables unused access keys"
+      ScheduleExpression: "rate(1 day)"
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt "LambdaFunctionDisableUnusedCredentials.Arn"
+          Id: "TargetFunctionV1"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/LambdaFunctionAuditFormatCloudWatchEvent
+  ##---------------------------------------------------------------------------------------
+  IAMRoleLambdaFunctionAuditFormatCloudWatchEvent:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join [ "_", [ "lambda", "audit-format-cloudwatch-event", !Ref "AWS::Region" ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: AllowSnsPublish
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action: "sns:Publish"
+                Resource: !Ref "SNSTopicAudit"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/LambdaFunctionConfig
+  ##---------------------------------------------------------------------------------------
+  IAMRoleLambdaFunctionConfig:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join [ "_", [ "lambda", "config", !Ref "AWS::Region" ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess
+        - arn:aws:iam::aws:policy/AWSCloudTrailReadOnlyAccess
+        - arn:aws:iam::aws:policy/IAMReadOnlyAccess
+        - arn:aws:iam::aws:policy/service-role/AWSConfigRulesExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: KmsReadOnly
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "kms:GetKeyRotationStatus"
+                  - "kms:ListKeys"
+                Resource: "*"
+        - PolicyName: S3ReadOnly
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "s3:GetBucketAcl"
+                  - "s3:GetBucketLogging"
+                Resource: "*"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/LambdaFunctionDisableUnusedCredentials
+  ##---------------------------------------------------------------------------------------
+  IAMRoleLambdaFunctionDisableUnusedCredentials:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join [ "_", [ "lambda", "disable-unused-credentials", !Ref "AWS::Region" ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: KmsReadOnly
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:DeleteLoginProfile
+                  - iam:GetAccessKeyLastUsed
+                  - iam:GetLoginProfile
+                  - iam:DeleteLoginProfile
+                  - iam:ListAccessKeys
+                  - iam:ListUsers
+                  - iam:UpdateAccessKey
+                Resource: "*"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Lambda/Function/AuditFormatCloudWatchEvent
+  # notes:
+  #   - Based on AWS Lab: aws-security-benchmark
+  #     - https://github.com/awslabs/aws-security-benchmark/blob/master/architecture/create-benchmark-rules.yaml
+  ##---------------------------------------------------------------------------------------
+  LambdaFunctionAuditFormatCloudWatchEvent:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "audit-format-cloudwatch-event"
+      Description: "Audit - Processes CloudWatch Event before publishing to SNS"
+      Code:
+        ZipFile: !Sub |
+          #==================================================================================================
+          # Function: disable-unused-credentials
+          # Purpose:  Audit - Processes CloudWatch Event before publishing to SNS
+          #==================================================================================================
+          import boto3
+          import json
+          SNS_TOPIC_ARN = '${SNSTopicAudit}'
+          #==================================================================================================
+          # Function handler
+          #==================================================================================================
+          def lambda_handler(event, context):
+              response = boto3.client('sns').publish(
+                  TopicArn = SNS_TOPIC_ARN,
+                  Message = json.dumps(event, indent=4),
+                  Subject = 'NOTIFICATION {0}:{1}'.format(event['detail']['eventSource'], event['detail']['eventName']),
+                  MessageStructure = 'raw'
+              )
+      Handler: "index.lambda_handler"
+      MemorySize: 1024
+      Role: !GetAtt "IAMRoleLambdaFunctionAuditFormatCloudWatchEvent.Arn"
+      Runtime: "python2.7"
+      Timeout: 5
+    DependsOn:
+      - "IAMRoleLambdaFunctionAuditFormatCloudWatchEvent"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Lambda/Function/ConfigEvaluateCloudTrailBucket
+  # notes:
+  #   - Based on AWS Lab: aws-security-benchmark
+  #     - https://github.com/awslabs/aws-security-benchmark/blob/master/architecture/create-benchmark-rules.yaml
+  #   - CIS Amazon Web Services Foundations
+  #     - 2.3: Ensure the S3 bucket CloudTrail logs to is not publicly accessible
+  #     - 2.6: Ensure S3 bucket access logging is enabled on the CloudTrail S3 bucket
+  ##---------------------------------------------------------------------------------------
+  LambdaFunctionConfigEvaluateCloudTrailBucket:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "config-evaluate-cloudtrail-bucket"
+      Description: "Evaluates whether the CloudTrail S3 bucket has appropriate security properties"
+      Code:
+        ZipFile: |
+          #==================================================================================================
+          # Function: config-evaluate-cloudtrail-bucket
+          # Purpose:  Evaluates whether the CloudTrail S3 bucket has appropriate security properties
+          #==================================================================================================
+          import json
+          import boto3
+          import datetime
+          import time
+          def lambda_handler(event, context):
+              is_compliant = True #default
+              annotation = ''
+              is_publicly_accessible = False
+              s3_bucket_name = ''
+              # Get the trail for the current region.
+              client = boto3.client('cloudtrail')
+              for trail in client.describe_trails(includeShadowTrails = False)['trailList']:
+                # CloudTrail S3 bucket not publicly accessible and is logged?
+                if trail['S3BucketName']:
+                    s3_bucket_name = trail['S3BucketName']
+                    client = boto3.client('s3')
+                    try:
+                        for grant in client.get_bucket_acl(Bucket = s3_bucket_name)['Grants']:
+                            if grant['Permission'] in ['READ','FULL_CONTROL'] \
+                                and ('URI' in grant['Grantee'] \
+                                and ('AuthenticatedUsers' in grant['Grantee']['URI'] or 'AllUsers' in grant['Grantee']['URI'])):
+                                # Bucket has an ACL that allows it to be publicly accessible.
+                                is_publicly_accessible = True
+                        if is_publicly_accessible:
+                            is_compliant = False
+                            annotation = annotation + ' The CloudTrail S3 bucket \'{}\' is publicly accessible.'.format(s3_bucket_name)
+                        # CloudTrail S3 bucket has logging enabled?
+                        if not client.get_bucket_logging(Bucket = s3_bucket_name):
+                            is_compliant = False
+                            annotation = annotation + ' The CloudTrail S3 bucket \'{}\' does not have logging enabled.'.format(s3_bucket_name)
+                    except E:
+                        is_compliant = False
+                        annotation = annotation + ' There was an error looking up CloudTrail S3 bucket \'{}\'.'.format(s3_bucket_name)
+                else:
+                    annotation = annotation + ' CloudTrail is not integrated with S3.'
+              result_token = 'No token found.'
+              if 'resultToken' in event: result_token = event['resultToken']
+              evaluations = [
+                  {
+                      'ComplianceResourceType': 'AWS::S3::Bucket',
+                      'ComplianceResourceId': s3_bucket_name,
+                      'ComplianceType': 'COMPLIANT' if is_compliant else 'NON_COMPLIANT',
+                      'OrderingTimestamp': datetime.datetime.now()
+                  }
+              ]
+              if annotation: evaluations[0]['Annotation'] = annotation
+              config = boto3.client('config')
+              config.put_evaluations(
+                  Evaluations = evaluations,
+                  ResultToken = result_token
+              )
+      Handler: "index.lambda_handler"
+      MemorySize: 1024
+      Role: !GetAtt "IAMRoleLambdaFunctionConfig.Arn"
+      Runtime: "python2.7"
+      Timeout: 10
+    DependsOn:
+      - "IAMRoleLambdaFunctionConfig"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Lambda/Function/ConfigEvaluateConfigInAllRegions
+  # notes:
+  #   - Based on AWS Lab: aws-security-benchmark
+  #     - https://github.com/awslabs/aws-security-benchmark/blob/master/architecture/create-benchmark-rules.yaml
+  #   - CIS Amazon Web Services Foundations
+  #     - 2.5: Ensure AWS Config is enabled in all regions
+  ##---------------------------------------------------------------------------------------
+  LambdaFunctionConfigEvaluateConfigInAllRegions:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "config-evaluate-config-in-all-regions"
+      Description: "Evaluates whether Config is enabled in all regions"
+      Code:
+        ZipFile: |
+          #==================================================================================================
+          # Function: config-evaluate-config-in-all-regions
+          # Purpose:  Evaluates whether Config is enabled in all regions
+          #==================================================================================================
+          import boto3
+          import json
+          import datetime
+          def lambda_handler(event, context):
+              is_compliant = True
+              evaluations = []
+              annotation = []
+              result_token = 'No token found.'
+              if 'resultToken' in event: result_token = event['resultToken']
+              # Get a list of regions. (Using EC2 in this way is a reliable and durable means of retrieving AWS regions.)
+              regions = [region['RegionName'] for region in boto3.client('ec2').describe_regions()['Regions']]
+              # Determine whether each region has an active configuration recorder and that at least one
+              # region is recording global events (such as IAM).
+              for region in regions:
+                  client = boto3.client('config', region_name = region)
+                  configuration_recorder_statuses = client.describe_configuration_recorder_status()['ConfigurationRecordersStatus']
+                  if configuration_recorder_statuses and configuration_recorder_statuses[0]['recording']:
+                      # Now determine whether the active recorder is recording all resources in the region.
+                      configuration_recorders = client.describe_configuration_recorders()['ConfigurationRecorders']
+                      if configuration_recorders and configuration_recorders[0]['recordingGroup']['allSupported']:
+                          evaluations.append(put_evaluation(region, True, ''))
+                      else:
+                          evaluations.append(put_evaluation(region, False, 'Config is not capturing all resources.'))
+                  else:
+                      evaluations.append(put_evaluation(region, False, 'Region does not have an active recorder.'))
+              boto3.client('config').put_evaluations(
+                  Evaluations = evaluations,
+                  ResultToken = result_token
+              )
+          def put_evaluation(region, is_compliant, annotation):
+                  evaluation = {
+                          'ComplianceResourceType': 'AWS::Config::ConfigurationRecorder',
+                          'ComplianceResourceId': region,
+                          'ComplianceType': 'COMPLIANT' if is_compliant else 'NON_COMPLIANT',
+                          'OrderingTimestamp': datetime.datetime.now()
+                      }
+                  if annotation: evaluation['Annotation'] = annotation
+                  return evaluation
+      Handler: "index.lambda_handler"
+      MemorySize: 1024
+      Role: !GetAtt "IAMRoleLambdaFunctionConfig.Arn"
+      Runtime: "python2.7"
+      Timeout: 120
+    DependsOn:
+      - "IAMRoleLambdaFunctionConfig"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Lambda/Function/ConfigEvaluatePolicyPermissions
+  # notes:
+  #   - Based on AWS Lab: aws-security-benchmark
+  #     - https://github.com/awslabs/aws-security-benchmark/blob/master/architecture/create-benchmark-rules.yaml
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.22: Ensure IAM policies that allow full "*:*" administrative privileges are not created
+  ##---------------------------------------------------------------------------------------
+  LambdaFunctionConfigEvaluatePolicyPermissions:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "config-evaluate-policy-permissions"
+      Description: "Evaluates whether IAM policies contain *.* statements"
+      Code:
+        ZipFile: |
+          #==================================================================================================
+          # Function: config-evaluate-policy-permissions
+          # Purpose:  Evaluates whether IAM policies contain *.* statements
+          #==================================================================================================
+          import boto3
+          import json
+          import jmespath
+          def evaluate_compliance(config_item, policy_arn):
+              if (config_item['resourceType'] != 'AWS::IAM::Policy'):
+                  return 'NOT_APPLICABLE'
+              return_value = 'COMPLIANT'
+              client = boto3.client('iam')
+              # Get the policy details.
+              policy = client.get_policy(PolicyArn = policy_arn)['Policy']
+              # Get the latest policy version.
+              policy_version = client.get_policy_version(
+                  PolicyArn = policy['Arn'],
+                  VersionId = policy['DefaultVersionId']
+              )
+              if jmespath.search('PolicyVersion.Document.Statement[?Effect == \'Allow\' && contains(Resource, \'*\') && contains (Action, \'*\')]', policy_version):
+                  return_value = 'NON_COMPLIANT'
+              return return_value
+          def lambda_handler(event, context):
+              invoking_event = json.loads(event['invokingEvent'])
+              policy_arn = invoking_event['configurationItem']['ARN']
+              compliance_value = evaluate_compliance(invoking_event['configurationItem'], policy_arn)
+              config = boto3.client('config')
+              response = config.put_evaluations(
+                 Evaluations=[
+                     {
+                         'ComplianceResourceType': invoking_event['configurationItem']['resourceType'],
+                         'ComplianceResourceId': invoking_event['configurationItem']['resourceId'],
+                         'ComplianceType': compliance_value,
+                         'OrderingTimestamp': invoking_event['configurationItem']['configurationItemCaptureTime']
+                     },
+                 ],
+                 ResultToken=event['resultToken'])
+      Handler: "index.lambda_handler"
+      MemorySize: 1024
+      Role: !GetAtt "IAMRoleLambdaFunctionConfig.Arn"
+      Runtime: "python2.7"
+      Timeout: 10
+    DependsOn:
+      - "IAMRoleLambdaFunctionConfig"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Lambda/Function/ConfigInstanceRoleUse
+  # notes:
+  #   - Based on AWS Lab: aws-security-benchmark
+  #     - https://github.com/awslabs/aws-security-benchmark/blob/master/architecture/create-benchmark-rules.yaml
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.19: Ensure IAM instance roles are used for AWS resource access from instances
+  ##---------------------------------------------------------------------------------------
+  LambdaFunctionConfigInstanceRoleUse:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "config-instance-role-use"
+      Description: "Evaluates whether instances use instance roles"
+      Code:
+        ZipFile: |
+          #==================================================================================================
+          # Function: config-instance-role-use
+          # Purpose:  Evaluates whether instances use instance roles
+          #==================================================================================================
+          import boto3
+          import json
+          def evaluate_compliance(config_item, instance_id):
+              if (config_item['resourceType'] != 'AWS::EC2::Instance'): return 'NOT_APPLICABLE'
+              reservations = boto3.client('ec2').describe_instances(InstanceIds=[instance_id])['Reservations']
+              if reservations and 'IamInstanceProfile' in reservations[0]['Instances'][0]: return 'COMPLIANT'
+              else: return 'NON_COMPLIANT'
+          def lambda_handler(event, context):
+              invoking_event = json.loads(event['invokingEvent'])
+              compliance_value = 'NOT_APPLICABLE'
+              instance_id = invoking_event['configurationItem']['resourceId']
+              compliance_value = evaluate_compliance(invoking_event['configurationItem'], instance_id)
+              config = boto3.client('config')
+              response = config.put_evaluations(
+                 Evaluations=[
+                     {
+                         'ComplianceResourceType': invoking_event['configurationItem']['resourceType'],
+                         'ComplianceResourceId': instance_id,
+                         'ComplianceType': compliance_value,
+                         'OrderingTimestamp': invoking_event['configurationItem']['configurationItemCaptureTime']
+                     },
+                 ],
+                 ResultToken=event['resultToken'])
+      Handler: "index.lambda_handler"
+      MemorySize: 1024
+      Role: !GetAtt "IAMRoleLambdaFunctionConfig.Arn"
+      Runtime: "python2.7"
+      Timeout: 10
+    DependsOn:
+      - "IAMRoleLambdaFunctionConfig"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Lambda/Function/DisableUnusedCredentials
+  # notes:
+  #   - Based on AWS Lab: aws-security-benchmark
+  #     - https://github.com/awslabs/aws-security-benchmark/blob/master/architecture/create-benchmark-rules.yaml
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.3: Ensure credentials unused for 90 days or greater are disabled
+  #     - 1.4: Ensure access keys are rotated every 90 days or less
+  ##---------------------------------------------------------------------------------------
+  LambdaFunctionDisableUnusedCredentials:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "disable-unused-credentials"
+      Description: "Deletes unused passwords and disables unused access keys"
+      Code:
+        ZipFile: |
+          #==================================================================================================
+          # Function: disable-unused-credentials
+          # Purpose:  Deletes unused passwords and disables unused access keys
+          #==================================================================================================
+          import boto3
+          import json
+          import datetime
+          from datetime import date
+          DEFAULT_AGE_THRESHOLD_IN_DAYS = 90
+          #==================================================================================================
+          # Function handler
+          #==================================================================================================
+          def lambda_handler(event, context):
+              return_value = {}
+              return_value['DeletedPasswords'] = []
+              return_value['DisabledAccessKeys'] = []
+              client = boto3.client('iam')
+              now = date(datetime.date.today().year, datetime.date.today().month, datetime.date.today().day)
+              # For each user, determine when:
+              # (1) the user last logged in and
+              # (2) when the user's access key were last used.
+              for user in client.list_users()['Users']:
+                  # Users who have never logged in or who don't have a password won't have the 'PasswordLastUsed' property.
+                  if 'PasswordLastUsed' in user:
+                      password_last_used = date(user['PasswordLastUsed'].year, user['PasswordLastUsed'].month, user['PasswordLastUsed'].day)
+                      age = (now - password_last_used).days
+                      if age > DEFAULT_AGE_THRESHOLD_IN_DAYS:
+                          # Danger, Will Robinson! Disable the user's password (delete login profile).
+                          print('The user {0} has not logged in to the console in {1} days.'.format(user['UserName'], age))
+                          print('DELETING password for {0}.'.format(user['UserName']))
+                          try:
+                              if client.get_login_profile(UserName = user['UserName']):
+                                  response = client.delete_login_profile(UserName = user['UserName'])
+                                  return_value['DeletedPasswords'].append({'UserName': user['UserName'], 'PasswordLastUsed': str(user['PasswordLastUsed'])})
+                          except:
+                              #No-op
+                              print('No login profile exists for {}. It may been already been deleted.'.format(user['UserName']))
+                  # Next, determine when the user's access keys were last used.
+                  for access_key in client.list_access_keys(UserName = user['UserName'])['AccessKeyMetadata']:
+                      if access_key['Status'] == 'Active':
+                          response = client.get_access_key_last_used(AccessKeyId = access_key['AccessKeyId'])
+                          if 'LastUsedDate' in response['AccessKeyLastUsed']:
+                              access_key_last_used_date = response['AccessKeyLastUsed']['LastUsedDate']
+                              access_key_last_used_date = date(access_key_last_used_date.year, access_key_last_used_date.month, access_key_last_used_date.day)
+                              age = (now - access_key_last_used_date).days
+                              if age > DEFAULT_AGE_THRESHOLD_IN_DAYS:
+                                  # Disable the access key.
+                                  print('The access key {0} has not been used in {1} days.'.format(access_key['AccessKeyId'], age))
+                                  print('DISABLING access key {0}.'.format(access_key['AccessKeyId']))
+                                  response = client.update_access_key(
+                                      UserName = user['UserName'],
+                                      AccessKeyId = access_key['AccessKeyId'],
+                                      Status = 'Inactive')
+                                  return_value['DisabledAccessKeys'].append({'AccessKeyId': access_key['AccessKeyId'], 'LastUsedDate': str(access_key_last_used_date)})
+              return return_value
+      Handler: "index.lambda_handler"
+      MemorySize: 1024
+      Role: !GetAtt "IAMRoleLambdaFunctionDisableUnusedCredentials.Arn"
+      Runtime: "python2.7"
+      Timeout: 10
+    DependsOn:
+      - "IAMRoleLambdaFunctionDisableUnusedCredentials"
+
+  ##-------------------------------------------------------------------------------------------------
+  # object: Lambda/Permission/AuditFormatCloudWatchEvent
+  ##-------------------------------------------------------------------------------------------------
+  LambdaPermissionAuditFormatCloudWatchEvent:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !GetAtt "LambdaFunctionAuditFormatCloudWatchEvent.Arn"
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+    DependsOn:
+      - "LambdaFunctionAuditFormatCloudWatchEvent"
+
+  ##-------------------------------------------------------------------------------------------------
+  # object: Lambda/Permission/ConfigEvaluateCloudTrailBucket
+  ##-------------------------------------------------------------------------------------------------
+  LambdaPermissionConfigEvaluateCloudTrailBucket:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !GetAtt "LambdaFunctionConfigEvaluateCloudTrailBucket.Arn"
+      Action: "lambda:InvokeFunction"
+      Principal: "config.amazonaws.com"
+    DependsOn:
+      - "LambdaFunctionConfigEvaluateCloudTrailBucket"
+
+  ##-------------------------------------------------------------------------------------------------
+  # object: Lambda/Permission/ConfigEvaluateConfigInAllRegions
+  ##-------------------------------------------------------------------------------------------------
+  LambdaPermissionConfigEvaluateConfigInAllRegions:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !GetAtt "LambdaFunctionConfigEvaluateConfigInAllRegions.Arn"
+      Action: "lambda:InvokeFunction"
+      Principal: "config.amazonaws.com"
+    DependsOn:
+      - "LambdaFunctionConfigEvaluateConfigInAllRegions"
+
+  ##-------------------------------------------------------------------------------------------------
+  # object: Lambda/Permission/ConfigEvaluatePolicyPermissions
+  ##-------------------------------------------------------------------------------------------------
+  LambdaPermissionConfigEvaluatePolicyPermissions:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !GetAtt "LambdaFunctionConfigEvaluatePolicyPermissions.Arn"
+      Action: "lambda:InvokeFunction"
+      Principal: "config.amazonaws.com"
+    DependsOn:
+      - "LambdaFunctionConfigEvaluatePolicyPermissions"
+
+  ##-------------------------------------------------------------------------------------------------
+  # object: Lambda/Permission/ConfigInstanceRoleUse
+  ##-------------------------------------------------------------------------------------------------
+  LambdaPermissionConfigInstanceRoleUse:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !GetAtt "LambdaFunctionConfigInstanceRoleUse.Arn"
+      Action: "lambda:InvokeFunction"
+      Principal: "config.amazonaws.com"
+    DependsOn:
+      - "LambdaFunctionConfigInstanceRoleUse"
+
+  ##-------------------------------------------------------------------------------------------------
+  # object: Lambda/Permission/DisableUnusedCredentials
+  ##-------------------------------------------------------------------------------------------------
+  LambdaPermissionDisableUnusedCredentials:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !GetAtt "LambdaFunctionDisableUnusedCredentials.Arn"
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+    DependsOn:
+      - "LambdaFunctionDisableUnusedCredentials"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/LambdaFunctionAuditFormatCloudWatchEvent
+  ##---------------------------------------------------------------------------------------
+  LogGroupLambdaFunctionAuditFormatCloudWatchEvent:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionAuditFormatCloudWatchEvent}"
+      RetentionInDays: "14"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/LambdaFunctionConfigEvaluateCloudTrailBucket
+  ##---------------------------------------------------------------------------------------
+  LogGroupLambdaFunctionConfigEvaluateCloudTrailBucket:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionConfigEvaluateCloudTrailBucket}"
+      RetentionInDays: "14"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/LambdaFunctionConfigEvaluateConfigInAllRegions
+  ##---------------------------------------------------------------------------------------
+  LogGroupLambdaFunctionConfigEvaluateConfigInAllRegions:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionConfigEvaluateConfigInAllRegions}"
+      RetentionInDays: "14"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/LambdaFunctionConfigEvaluatePolicyPermissions
+  ##---------------------------------------------------------------------------------------
+  LogGroupLambdaFunctionConfigEvaluatePolicyPermissions:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionConfigEvaluatePolicyPermissions}"
+      RetentionInDays: "14"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/LambdaFunctionConfigInstanceRoleUse
+  ##---------------------------------------------------------------------------------------
+  LogGroupLambdaFunctionConfigInstanceRoleUse:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionConfigInstanceRoleUse}"
+      RetentionInDays: "14"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/LambdaFunctionDisableUnusedCredentials
+  ##---------------------------------------------------------------------------------------
+  LogGroupLambdaFunctionDisableUnusedCredentials:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionDisableUnusedCredentials}"
+      RetentionInDays: "14"
+
+  ##-------------------------------------------------------------------------------------------------
+  # object: Logs/MetricFilter/ConsoleLoginFailures
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.6: Ensure a log metric filter and alarm exist for AWS Management Console authentication failures
+  ##-------------------------------------------------------------------------------------------------
+  MetricFilterConsoleLoginFailures:
+    Type: "AWS::Logs::MetricFilter"
+    Properties:
+      LogGroupName: !GetAtt "StackReferenceResultsInitialize.LogGroupCloudTrailAuditId"
+      FilterPattern: "{
+          ($.eventName = \"ConsoleLogin\") &&
+          ($.errorMessage = \"Failed authentication\")
+          }"
+      MetricTransformations:
+        -
+          MetricNamespace: "CloudTrailMetrics"
+          MetricName: "ConsoleLoginFailures"
+          MetricValue: 1
+
+  ##-------------------------------------------------------------------------------------------------
+  # object: Logs/MetricFilter/ConsoleSigninWithoutMFA
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.2: Ensure a log metric filter and alarm exist for Management Console sign-in without MFA
+  ##-------------------------------------------------------------------------------------------------
+  MetricFilterConsoleSigninWithoutMFA:
+    Type: "AWS::Logs::MetricFilter"
+    Properties:
+      LogGroupName: !GetAtt "StackReferenceResultsInitialize.LogGroupCloudTrailAuditId"
+      FilterPattern: "{
+          ($.eventName = \"ConsoleLogin\") &&
+          ($.additionalEventData.MFAUsed != \"Yes\") &&
+          ($.responseElements.ConsoleLogin != \"Failure\") &&
+          ($.additionalEventData.SamlProviderArn NOT EXISTS)
+          }"
+      MetricTransformations:
+        -
+          MetricNamespace: "CloudTrailMetrics"
+          MetricName: "SigninWithoutMFA"
+          MetricValue: "1"
+
+  ##-------------------------------------------------------------------------------------------------
+  # object: Logs/MetricFilter/KMSCustomerKeyDeletion
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.7: Ensure a log metric filter and alarm exist for disabling or scheduled deletion of customer created CMKs
+  ##-------------------------------------------------------------------------------------------------
+  MetricFilterKMSCustomerKeyDeletion:
+    Type: "AWS::Logs::MetricFilter"
+    Properties:
+      LogGroupName: !GetAtt "StackReferenceResultsInitialize.LogGroupCloudTrailAuditId"
+      FilterPattern: "{
+          ($.eventSource = kms.amazonaws.com) &&
+          (($.eventName=DisableKey)||($.eventName=ScheduleKeyDeletion))
+          }"
+      MetricTransformations:
+        -
+          MetricNamespace: "CloudTrailMetrics"
+          MetricName: "KMSCustomerKeyDeletion"
+          MetricValue: 1
+
+  ##-------------------------------------------------------------------------------------------------
+  # object: Logs/MetricFilter/RootUserEventCount
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.1: Avoid the use of the "root" account
+  #     - 3.3: Ensure a log metric filter and alarm exist for usage of "root" account
+  ##-------------------------------------------------------------------------------------------------
+  MetricFilterRootUserEventCount:
+    Type: "AWS::Logs::MetricFilter"
+    Properties:
+      LogGroupName: !GetAtt "StackReferenceResultsInitialize.LogGroupCloudTrailAuditId"
+      FilterPattern: "{
+          $.userIdentity.type = \"Root\" &&
+          $.userIdentity.invokedBy NOT EXISTS &&
+          $.eventType != \"AwsServiceEvent\"
+          }"
+      MetricTransformations:
+        -
+          MetricNamespace: "CloudTrailMetrics"
+          MetricName: "RootUserEventCount"
+          MetricValue: 1
+
+  ##-------------------------------------------------------------------------------------------------
+  # object: Logs/MetricFilter/UnauthorizedAttemptCount
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 3.1: Ensure a log metric filter and alarm exist for unauthorized API calls
+  ##-------------------------------------------------------------------------------------------------
+  MetricFilterUnauthorizedAttemptCount:
+    Type: "AWS::Logs::MetricFilter"
+    Properties:
+      LogGroupName: !GetAtt "StackReferenceResultsInitialize.LogGroupCloudTrailAuditId"
+      FilterPattern: "{ ($.errorCode = \"*UnauthorizedOperation\") || ($.errorCode = \"AccessDenied*\") }"
+      MetricTransformations:
+        -
+          MetricNamespace: CloudTrailMetrics
+          MetricName: "UnauthorizedAttemptCount"
+          MetricValue: 1
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/Subscription/AuditEmail1
+  ##---------------------------------------------------------------------------------------
+  SNSSubscriptionAuditEmail1:
+    Condition: "ExistsSNSSubscriptionEmail1"
+    Type: "AWS::SNS::Subscription"
+    Properties:
+      Endpoint: !Ref "SNSSubscriptionEmail1"
+      Protocol: "email"
+      TopicArn: !Ref "SNSTopicAudit"
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/Subscription/AuditEmail2
+  ##---------------------------------------------------------------------------------------
+  SNSSubscriptionAuditEmail2:
+    Condition: "ExistsSNSSubscriptionEmail2"
+    Type: "AWS::SNS::Subscription"
+    Properties:
+      Endpoint: !Ref "SNSSubscriptionEmail2"
+      Protocol: "email"
+      TopicArn: !Ref "SNSTopicAudit"
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/Subscription/AuditEmail3
+  ##---------------------------------------------------------------------------------------
+  SNSSubscriptionAuditEmail3:
+    Condition: "ExistsSNSSubscriptionEmail3"
+    Type: "AWS::SNS::Subscription"
+    Properties:
+      Endpoint: !Ref "SNSSubscriptionEmail3"
+      Protocol: "email"
+      TopicArn: !Ref "SNSTopicAudit"
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/Subscription/AuditEmail4
+  ##---------------------------------------------------------------------------------------
+  SNSSubscriptionAuditEmail4:
+    Condition: "ExistsSNSSubscriptionEmail4"
+    Type: "AWS::SNS::Subscription"
+    Properties:
+      Endpoint: !Ref "SNSSubscriptionEmail4"
+      Protocol: "email"
+      TopicArn: !Ref "SNSTopicAudit"
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/Topic/Audit
+  ##---------------------------------------------------------------------------------------
+  SNSTopicAudit:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: "audit-global"
+      DisplayName: "audit-global"
+
+##-------------------------------------------------------------------------------------------------
+Outputs:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Contact
+  ##---------------------------------------------------------------------------------------
+  Contact:
+    Description: "Details: Contact"
+    Value: !Select [1, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Contact"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Environment
+  ##---------------------------------------------------------------------------------------
+  Environment:
+    Description: "Details: Environment"
+    Value: !Select [3, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Environment"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionAbbr
+  ##---------------------------------------------------------------------------------------
+  FunctionAbbr:
+    Description: "Details: FunctionAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionName
+  ##---------------------------------------------------------------------------------------
+  FunctionName:
+    Description: "Details: FunctionName"
+    Value: !Select [0, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: LastUpdate"
+    Value: !Ref "LastUpdate"
+    Export:
+      Name: !Sub "${AWS::StackName}-LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationAbbr
+  ##---------------------------------------------------------------------------------------
+  OrganizationAbbr:
+    Description: "Details: OrganizationAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationName
+  ##---------------------------------------------------------------------------------------
+  OrganizationName:
+    Description: "Details: OrganizationName"
+    Value: !Select [0, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner"
+    Value: !Select [0, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Owner"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectAbbr
+  ##---------------------------------------------------------------------------------------
+  ProjectAbbr:
+    Description: "Details: ProjectAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectName
+  ##---------------------------------------------------------------------------------------
+  ProjectName:
+    Description: "Details: ProjectName"
+    Value: !Select [0, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/Topic/AuditArn
+  ##---------------------------------------------------------------------------------------
+  SNSTopicAuditArn:
+    Description: "SNS Topic (Audit): ARN"
+    Value: !Ref "SNSTopicAudit"
+    Export:
+      Name: !Sub "${AWS::StackName}-SNSTopicAuditArn"
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/Topic/AuditTopicName
+  ##---------------------------------------------------------------------------------------
+  SNSTopicAuditTopicName:
+    Description: "SNS Topic (Audit): Topic Name"
+    Value: !GetAtt "SNSTopicAudit.TopicName"
+    Export:
+      Name: !Sub "${AWS::StackName}-SNSTopicAuditTopicName"
+

@@ -1,0 +1,19 @@
+[
+  { "ParameterKey": "Account", "ParameterValue": "AutomateTheCloud|atc|480685085376" },
+  { "ParameterKey": "AvailabilityZone1", "ParameterValue": "us-east-1a" },
+  { "ParameterKey": "AvailabilityZone2", "ParameterValue": "us-east-1c" },
+  { "ParameterKey": "AvailabilityZone3", "ParameterValue": "us-east-1f" },
+  { "ParameterKey": "EnableVPCFlowLogs", "ParameterValue": "true" },
+  { "ParameterKey": "FlowLogTrafficType", "ParameterValue": "REJECT" },
+  { "ParameterKey": "Function", "ParameterValue": "VPC|vpc" },
+  { "ParameterKey": "IpNetmask", "ParameterValue": "19" },
+  { "ParameterKey": "IpNetwork", "ParameterValue": "172.24.0.0" },
+  { "ParameterKey": "KeypairDefault", "ParameterValue": "ec2-user_shared_us-east-1_2019-09-24_d77c" },
+  { "ParameterKey": "LastUpdate", "ParameterValue": "2019-09-27 04:31:58.309 UTC" },
+  { "ParameterKey": "Organization", "ParameterValue": "Shared Services|share|us-east-1|prd" },
+  { "ParameterKey": "Owner", "ParameterValue": "David Singer|aws-ops@automatethe.cloud" },
+  { "ParameterKey": "Project", "ParameterValue": "Infrastructure|infrastructure" },
+  { "ParameterKey": "StackReferenceInitialize", "ParameterValue": "account-initialize-us-east-1" },
+  { "ParameterKey": "TimezoneLinux", "ParameterValue": "America/Kentucky/Louisville" },
+  { "ParameterKey": "TimezoneWindows", "ParameterValue": "Eastern Standard Time" } 
+]

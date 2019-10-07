@@ -1,0 +1,573 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Account - SAML - global"
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Account
+  ##---------------------------------------------------------------------------------------
+  Account:
+    Description: "Details: Account (AccountName | AccountAbbr | AccountNumber)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Function
+  ##---------------------------------------------------------------------------------------
+  Function:
+    Description: "Details: Function (FunctionName | FunctionAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: Last Update"
+    Type: String
+    Default: 0
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Organization
+  ##---------------------------------------------------------------------------------------
+  Organization:
+    Description: "Details: Organization (OrganizationName | OrganizationAbbr | region | environment)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner (Owner | Contact)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Project
+  ##---------------------------------------------------------------------------------------
+  Project:
+    Description: "Details: Project (ProjectName | ProjectAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/SAMLMaxSessionDurationPrivileged
+  ##---------------------------------------------------------------------------------------
+  SAMLMaxSessionDurationPrivileged:
+    Description: "SAML: Maximum Session Duration (Privileged User)"
+    Type: Number
+    MinValue: 3600
+    MaxValue: 43200
+    Default: 3600
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/SAMLMaxSessionDurationUser
+  ##---------------------------------------------------------------------------------------
+  SAMLMaxSessionDurationUser:
+    Description: "SAML: Maximum Session Duration (User)"
+    Type: Number
+    MinValue: 3600
+    MaxValue: 43200
+    Default: 3600
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/SAMLMetadataBucket
+  ##---------------------------------------------------------------------------------------
+  SAMLMetadataBucket:
+    Description: "SAML: Metadata (S3 Bucket)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/SAMLMetadataFilename
+  ##---------------------------------------------------------------------------------------
+  SAMLMetadataFilename:
+    Description: "SAML: Metadata (Filename)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/SAMLProviderName
+  ##---------------------------------------------------------------------------------------
+  SAMLProviderName:
+    Description: "SAML: Provider Name"
+    Type: String
+    Default: "idp"
+    AllowedPattern: "^[a-zA-Z0-9\\.\\_\\-]{1,128}$"
+
+##-------------------------------------------------------------------------------------------------
+Resources:
+  ##---------------------------------------------------------------------------------------
+  # object:  Custom_SAML_Roles
+  ##---------------------------------------------------------------------------------------
+  RoleSAMLCustomAutomateTheCloudAdministrator:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "SAML_AutomateTheCloud_Administrator"
+      MaxSessionDuration: !Ref "SAMLMaxSessionDurationUser"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Action: "sts:AssumeRoleWithSAML"
+          Effect: "Allow"
+          Condition:
+            StringEquals:
+              SAML:aud: https://signin.aws.amazon.com/saml
+          Principal:
+            Federated: !Sub arn:aws:iam::${AWS::AccountId}:saml-provider/${SAMLProviderName}
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/ReadOnlyAccess"
+      Policies:
+        -
+          PolicyName: "iam_instance_access_automatethecloud-administrator"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "ec2:DescribeInstances"
+                Resource: "*"
+              - Effect: "Allow"
+                Action:
+                  - "ec2-instance-connect:SendSSHPublicKey"
+                Condition:
+                  StringEquals:
+                    ec2:osuser: automatethecloud-administrator
+                Resource:
+                  - !Join [ "", [ "arn:aws:ec2:*:", !Ref "AWS::AccountId", ":instance/*" ] ]
+              - Effect: "Allow"
+                Action:
+                  - "ec2-instance-connect:SendSSHPublicKey"
+                Condition:
+                  StringEquals:
+                    ec2:osuser: automatethecloud-developer
+                Resource:
+                  - !Join [ "", [ "arn:aws:ec2:*:", !Ref "AWS::AccountId", ":instance/*" ] ]
+  RoleSAMLCustomAutomateTheCloudDeveloper:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "SAML_AutomateTheCloud_Developer"
+      MaxSessionDuration: !Ref "SAMLMaxSessionDurationUser"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Action: "sts:AssumeRoleWithSAML"
+          Effect: "Allow"
+          Condition:
+            StringEquals:
+              SAML:aud: https://signin.aws.amazon.com/saml
+          Principal:
+            Federated: !Sub arn:aws:iam::${AWS::AccountId}:saml-provider/${SAMLProviderName}
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/ReadOnlyAccess"
+      Policies:
+        -
+          PolicyName: "iam_instance_access_automatethecloud-developer"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "ec2:DescribeInstances"
+                Resource: "*"
+              - Effect: "Allow"
+                Action:
+                  - "ec2-instance-connect:SendSSHPublicKey"
+                Condition:
+                  StringEquals:
+                    ec2:osuser: automatethecloud-developer
+                Resource:
+                  - !Join [ "", [ "arn:aws:ec2:*:", !Ref "AWS::AccountId", ":instance/*" ] ]
+
+  ##---------------------------------------------------------------------------------------
+  # object: Custom/SAMLCreateIdentityProvider
+  ##---------------------------------------------------------------------------------------
+  SAMLCreateIdentityProvider:
+    Type: "Custom::SAMLCreateIdentityProvider"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !GetAtt "LambdaFunctionSAMLCreateIdentityProvider.Arn"
+      saml_provider_name: !Ref "SAMLProviderName"
+      saml_provider_arn: !Sub arn:aws:iam::${AWS::AccountId}:saml-provider/${SAMLProviderName}
+    DependsOn: "LogGroupLambdaFunctionSAMLCreateIdentityProvider"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/LambdaFunctionSAMLCreateIdentityProvider
+  ##---------------------------------------------------------------------------------------
+  IAMRoleLambdaFunctionSAMLCreateIdentityProvider:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join [ "_", [ "lambda", "saml-create-identity-provider", !Ref "AWS::Region" ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: "lambda.amazonaws.com"
+          Action:
+          - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+      - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+      - PolicyName: "saml_create-idp"
+        PolicyDocument:
+          Statement:
+          - Effect: "Allow"
+            Action:
+            - "logs:*"
+            Resource: !Join [ "", [ "arn:aws:logs:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":log-group:/aws/lambda/", "saml-create-identity-provider", ":*" ] ]
+          - Effect: "Allow"
+            Action:
+            - "s3:GetObject"
+            Resource: !Join [ "", [ "arn:aws:s3:::", !Ref "SAMLMetadataBucket", "/", !Ref "SAMLMetadataFilename" ] ]
+          - Effect: "Allow"
+            Action:
+            - "iam:CreateSAMLProvider"
+            - "iam:DeleteSAMLProvider"
+            - "iam:ListSAMLProviders"
+            Resource: "*"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/SAMLAdministrator
+  ##---------------------------------------------------------------------------------------
+  RoleSAMLAdministrator:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "SAML_Administrator"
+      MaxSessionDuration: !Ref "SAMLMaxSessionDurationPrivileged"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Action: "sts:AssumeRoleWithSAML"
+          Effect: "Allow"
+          Condition:
+            StringEquals:
+              SAML:aud: https://signin.aws.amazon.com/saml
+          Principal:
+            Federated: !Sub arn:aws:iam::${AWS::AccountId}:saml-provider/${SAMLProviderName}
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AdministratorAccess"
+      Policies:
+        -
+          PolicyName: "iam_instance_access_ec2-user"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "ec2:DescribeInstances"
+                Resource: "*"
+              - Effect: "Allow"
+                Action:
+                  - "ec2-instance-connect:SendSSHPublicKey"
+                Condition:
+                  StringEquals:
+                    ec2:osuser: ec2-user
+                Resource:
+                  - !Join [ "", [ "arn:aws:ec2:*:", !Ref "AWS::AccountId", ":instance/*" ] ]
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/SAMLBilling
+  ##---------------------------------------------------------------------------------------
+  RoleSAMLBilling:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "SAML_Billing"
+      MaxSessionDuration: !Ref "SAMLMaxSessionDurationUser"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Action: "sts:AssumeRoleWithSAML"
+          Effect: "Allow"
+          Condition:
+            StringEquals:
+              SAML:aud: https://signin.aws.amazon.com/saml
+          Principal:
+            Federated: !Sub arn:aws:iam::${AWS::AccountId}:saml-provider/${SAMLProviderName}
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/job-function/Billing"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/SAMLDeveloper
+  ##---------------------------------------------------------------------------------------
+  RoleSAMLDeveloper:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "SAML_Developer"
+      MaxSessionDuration: !Ref "SAMLMaxSessionDurationUser"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Action: "sts:AssumeRoleWithSAML"
+          Effect: "Allow"
+          Condition:
+            StringEquals:
+              SAML:aud: https://signin.aws.amazon.com/saml
+          Principal:
+            Federated: !Sub arn:aws:iam::${AWS::AccountId}:saml-provider/${SAMLProviderName}
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/ReadOnlyAccess"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/SAMLPowerUser
+  ##---------------------------------------------------------------------------------------
+  RoleSAMLPowerUser:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "SAML_PowerUser"
+      MaxSessionDuration: !Ref "SAMLMaxSessionDurationPrivileged"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Action: "sts:AssumeRoleWithSAML"
+          Effect: "Allow"
+          Condition:
+            StringEquals:
+              SAML:aud: https://signin.aws.amazon.com/saml
+          Principal:
+            Federated: !Sub arn:aws:iam::${AWS::AccountId}:saml-provider/${SAMLProviderName}
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/PowerUserAccess"
+      Policies:
+        -
+          PolicyName: "iam_instance_access_ec2-user"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "ec2:DescribeInstances"
+                Resource: "*"
+              - Effect: "Allow"
+                Action:
+                  - "ec2-instance-connect:SendSSHPublicKey"
+                Condition:
+                  StringEquals:
+                    ec2:osuser: ec2-user
+                Resource:
+                  - !Join [ "", [ "arn:aws:ec2:*:", !Ref "AWS::AccountId", ":instance/*" ] ]
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/SAMLReadOnly
+  ##---------------------------------------------------------------------------------------
+  RoleSAMLReadOnly:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "SAML_ReadOnly"
+      MaxSessionDuration: !Ref "SAMLMaxSessionDurationUser"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Action: "sts:AssumeRoleWithSAML"
+          Effect: "Allow"
+          Condition:
+            StringEquals:
+              SAML:aud: https://signin.aws.amazon.com/saml
+          Principal:
+            Federated: !Sub arn:aws:iam::${AWS::AccountId}:saml-provider/${SAMLProviderName}
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/ReadOnlyAccess"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/SAMLSecurity
+  ##---------------------------------------------------------------------------------------
+  RoleSAMLSecurity:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "SAML_Security"
+      MaxSessionDuration: !Ref "SAMLMaxSessionDurationPrivileged"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Action: "sts:AssumeRoleWithSAML"
+          Effect: "Allow"
+          Condition:
+            StringEquals:
+              SAML:aud: https://signin.aws.amazon.com/saml
+          Principal:
+            Federated: !Sub arn:aws:iam::${AWS::AccountId}:saml-provider/${SAMLProviderName}
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/SecurityAudit"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Lambda/Function/SAMLCreateIdentityProvider
+  # notes:
+  #   - Based on barnesrobert/aws-iam-baseline
+  #     - https://github.com/barnesrobert/aws-iam-baseline/blob/master/iam-baseline.yaml
+  ##---------------------------------------------------------------------------------------
+  LambdaFunctionSAMLCreateIdentityProvider:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "saml-create-identity-provider"
+      Description: "SAML Create Identity Provider"
+      Environment:
+        Variables:
+          saml_bucket_name: !Ref "SAMLMetadataBucket"
+          saml_filename: !Ref "SAMLMetadataFilename"
+          saml_provider_name: !Ref "SAMLProviderName"
+          saml_provider_arn: !Sub arn:aws:iam::${AWS::AccountId}:saml-provider/${SAMLProviderName}
+      Code:
+        ZipFile: !Sub |
+          #==================================================================================================
+          # Function: saml-create-identity-provider
+          # Purpose:  SAML Create Identity Provider
+          #==================================================================================================
+          import json
+          import boto3
+          import os
+          import botocore
+          import cfnresponse
+          #==================================================
+          # Default handler
+          #==================================================
+          def lambda_handler(event, context):
+              print(json.dumps(event))
+              response_status = cfnresponse.SUCCESS
+              response_data = ''
+              saml_provider_exists = False # prove otherwise
+              # First, determine whether the SAML provider already exists.
+              for saml_provider in boto3.client('iam').list_saml_providers()['SAMLProviderList']:
+                saml_provider_exists = saml_provider_exists or os.environ['saml_provider_arn'] == saml_provider['Arn']
+              print('SAML provider {} exists: {}'.format(os.environ['saml_provider_arn'], saml_provider_exists))
+              # Only execute in a custom CloudFormation resource creation or update event.
+              if not saml_provider_exists and ('RequestType' in event and event['RequestType'] in ['Create', 'Update']):
+                try:
+                  # Specify the local filename.
+                  local_filename = '/tmp/saml.xml'
+                  # Download the file from S3 to a local file.
+                  boto3.resource('s3').Bucket(os.environ['saml_bucket_name']).download_file(
+                      os.environ['saml_filename'],
+                      local_filename
+                      )
+                  # Get the contents of the file.
+                  file = open(local_filename, 'r')
+                  file_contents = file.read()
+                  file.close()
+                  # Create the SAML provider and provide the metatdata document.
+                  response = boto3.resource('iam').create_saml_provider(
+                      SAMLMetadataDocument = file_contents,
+                      Name = os.environ['saml_provider_name']
+                  )
+                except botocore.exceptions.ClientError as e:
+                    if e.response['Error']['Code'] == '404':
+                        print('The file {} does not exist in the bucket {}.'.format(os.environ['saml_filename'], os.environ['saml_bucket_name']))
+                    else:
+                        raise
+              elif saml_provider_exists and ('RequestType' in event and event['RequestType'] == 'Delete'):
+                  # Delete the SAML provider.
+                  response = boto3.client('iam').delete_saml_provider(
+                      SAMLProviderArn = os.environ['saml_provider_arn']
+                  )
+              # Send the response to CloudFormation.
+              cfnresponse.send(event, context, response_status, {"Response":response_data}, '')
+      Handler: "index.lambda_handler"
+      MemorySize: 1024
+      Role: !GetAtt "IAMRoleLambdaFunctionSAMLCreateIdentityProvider.Arn"
+      Runtime: "python3.6"
+      Timeout: 60
+    DependsOn:
+      - IAMRoleLambdaFunctionSAMLCreateIdentityProvider
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/LambdaFunctionSAMLCreateIdentityProvider
+  ##---------------------------------------------------------------------------------------
+  LogGroupLambdaFunctionSAMLCreateIdentityProvider:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionSAMLCreateIdentityProvider}"
+      RetentionInDays: "3653"
+
+##-------------------------------------------------------------------------------------------------
+Outputs:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Contact
+  ##---------------------------------------------------------------------------------------
+  Contact:
+    Description: "Details: Contact"
+    Value: !Select [1, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Contact"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Environment
+  ##---------------------------------------------------------------------------------------
+  Environment:
+    Description: "Details: Environment"
+    Value: !Select [3, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Environment"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionAbbr
+  ##---------------------------------------------------------------------------------------
+  FunctionAbbr:
+    Description: "Details: FunctionAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionName
+  ##---------------------------------------------------------------------------------------
+  FunctionName:
+    Description: "Details: FunctionName"
+    Value: !Select [0, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: LastUpdate"
+    Value: !Ref "LastUpdate"
+    Export:
+      Name: !Sub "${AWS::StackName}-LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationAbbr
+  ##---------------------------------------------------------------------------------------
+  OrganizationAbbr:
+    Description: "Details: OrganizationAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationName
+  ##---------------------------------------------------------------------------------------
+  OrganizationName:
+    Description: "Details: OrganizationName"
+    Value: !Select [0, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner"
+    Value: !Select [0, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Owner"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectAbbr
+  ##---------------------------------------------------------------------------------------
+  ProjectAbbr:
+    Description: "Details: ProjectAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectName
+  ##---------------------------------------------------------------------------------------
+  ProjectName:
+    Description: "Details: ProjectName"
+    Value: !Select [0, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectName"
+

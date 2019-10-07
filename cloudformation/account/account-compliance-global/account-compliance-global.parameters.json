@@ -1,0 +1,13 @@
+[
+  { "ParameterKey": "Account", "ParameterValue": "AutomateTheCloud|atc|480685085376" },
+  { "ParameterKey": "Function", "ParameterValue": "Compliance Global|compliance-global" },
+  { "ParameterKey": "LastUpdate", "ParameterValue": "2019-09-27 02:02:24.071 UTC" },
+  { "ParameterKey": "Organization", "ParameterValue": "Account|account|us-east-1|global" },
+  { "ParameterKey": "Owner", "ParameterValue": "David Singer|aws-ops@automatethe.cloud" },
+  { "ParameterKey": "Project", "ParameterValue": "Account|account" },
+  { "ParameterKey": "SNSSubscriptionEmail1", "ParameterValue": "david.singer@automatethe.cloud" },
+  { "ParameterKey": "SNSSubscriptionEmail2", "ParameterValue": "" },
+  { "ParameterKey": "SNSSubscriptionEmail3", "ParameterValue": "" },
+  { "ParameterKey": "SNSSubscriptionEmail4", "ParameterValue": "" },
+  { "ParameterKey": "StackReferenceInitialize", "ParameterValue": "account-initialize-global" } 
+]

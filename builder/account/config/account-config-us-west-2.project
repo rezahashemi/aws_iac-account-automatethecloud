@@ -1,0 +1,30 @@
+Name:                                       account-config-us-west-2
+Description:                                Account - Config - us-west-2
+Updated:                                    2019/10/04 18:15:00 EST
+
+Details:
+  Project:                                  Account|account
+  Function:                                 Config us-west-2|config-us-west-2
+  Organization:                             Account|account|us-west-2|global
+  Account:                                  AutomateTheCloud|atc|480685085376
+  Owner:                                    David Singer|aws-ops@automatethe.cloud
+  DeploymentTimeout:                        45
+
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  #-- Stack Reference -------------------------------------------------------------------
+  S3BucketLogsGlobalName:                   logs-global-480685085376
+
+  #-- Config ----------------------------------------------------------------------------
+  ConfigDeliveryFrequency:                  TwentyFour_Hours
+  ConfigIncludeGlobalResourceTypes:         true
+
+##-------------------------------------------------------------------------------------------------
+Paradigm:
+  Templates:
+    - Account/Config_Region
+  Parameters:
+  Mappings:
+  Conditions:
+  Resources:
+  Outputs:

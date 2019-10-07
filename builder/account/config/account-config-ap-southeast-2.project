@@ -1,0 +1,30 @@
+Name:                                       account-config-ap-southeast-2
+Description:                                Account - Config - ap-southeast-2
+Updated:                                    2019/10/04 18:15:00 EST
+
+Details:
+  Project:                                  Account|account
+  Function:                                 Config ap-southeast-2|config-ap-southeast-2
+  Organization:                             Account|account|ap-southeast-2|global
+  Account:                                  AutomateTheCloud|atc|480685085376
+  Owner:                                    David Singer|aws-ops@automatethe.cloud
+  DeploymentTimeout:                        45
+
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  #-- Stack Reference -------------------------------------------------------------------
+  S3BucketLogsGlobalName:                   logs-global-480685085376
+
+  #-- Config ----------------------------------------------------------------------------
+  ConfigDeliveryFrequency:                  TwentyFour_Hours
+  ConfigIncludeGlobalResourceTypes:         true
+
+##-------------------------------------------------------------------------------------------------
+Paradigm:
+  Templates:
+    - Account/Config_Region
+  Parameters:
+  Mappings:
+  Conditions:
+  Resources:
+  Outputs:

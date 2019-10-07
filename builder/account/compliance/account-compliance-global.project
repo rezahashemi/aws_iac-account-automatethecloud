@@ -1,0 +1,32 @@
+Name:                                       account-compliance-global
+Description:                                Account - Compliance - global
+Updated:                                    2019/09/26 22:00:00 EST
+
+Details:
+  Project:                                  Account|account
+  Function:                                 Compliance Global|compliance-global
+  Organization:                             Account|account|us-east-1|global
+  Account:                                  AutomateTheCloud|atc|480685085376
+  Owner:                                    David Singer|aws-ops@automatethe.cloud
+  DeploymentTimeout:                        45
+
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  #-- Stack Reference -------------------------------------------------------------------
+  StackReferenceInitialize:                 account-initialize-global
+
+  #-- SNS -----------------------------------------------------------------------------
+  SNSSubscriptionEmail1:                    david.singer@automatethe.cloud
+  SNSSubscriptionEmail2:
+  SNSSubscriptionEmail3:
+  SNSSubscriptionEmail4:
+
+##-------------------------------------------------------------------------------------------------
+Paradigm:
+  Templates:
+    - Account/Compliance_Global
+  Parameters:
+  Mappings:
+  Conditions:
+  Resources:
+  Outputs:

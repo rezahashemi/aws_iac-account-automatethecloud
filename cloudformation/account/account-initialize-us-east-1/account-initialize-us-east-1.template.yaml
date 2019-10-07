@@ -1,0 +1,1133 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Account - Initialize - us-east-1"
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Account
+  ##---------------------------------------------------------------------------------------
+  Account:
+    Description: "Details: Account (AccountName | AccountAbbr | AccountNumber)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Function
+  ##---------------------------------------------------------------------------------------
+  Function:
+    Description: "Details: Function (FunctionName | FunctionAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: Last Update"
+    Type: String
+    Default: 0
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Organization
+  ##---------------------------------------------------------------------------------------
+  Organization:
+    Description: "Details: Organization (OrganizationName | OrganizationAbbr | region | environment)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner (Owner | Contact)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Project
+  ##---------------------------------------------------------------------------------------
+  Project:
+    Description: "Details: Project (ProjectName | ProjectAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: GuardDuty/EnableGuardDuty
+  ##---------------------------------------------------------------------------------------
+  EnableGuardDuty:
+    Description: "Enable GuardDuty"
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - ""
+      - "true"
+      - "false"
+    ConstraintDescription: "true/false"
+
+  ##---------------------------------------------------------------------------------------
+  # object: GuardDuty/GuardDutyFindingPublishingFrequency
+  ##---------------------------------------------------------------------------------------
+  GuardDutyFindingPublishingFrequency:
+    Description: "GuardDuty: Finding Publishing Frequency"
+    Type: String
+    Default: "SIX_HOURS"
+    AllowedValues:
+      - "FIFTEEN_MINUTES"
+      - "ONE_HOUR"
+      - "SIX_HOURS"
+    ConstraintDescription: "Possible values are: FIFTEEN_MINUTES, ONE_HOUR, SIX_HOURS"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogRetentionAMILookupAmazonLinux2
+  ##---------------------------------------------------------------------------------------
+  LogRetentionAMILookupAmazonLinux2:
+    Description: "Log Retention (days): AMILookupAmazonLinux2"
+    Type: Number
+    Default: 14
+    AllowedValues:
+      - 1
+      - 3
+      - 5
+      - 7
+      - 14
+      - 30
+      - 60
+      - 90
+      - 120
+      - 150
+      - 180
+      - 365
+      - 400
+      - 545
+      - 731
+      - 1827
+      - 3653
+    ConstraintDescription: "Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogRetentionAMILookupCustom
+  ##---------------------------------------------------------------------------------------
+  LogRetentionAMILookupCustom:
+    Description: "Log Retention (days): AMILookupCustom"
+    Type: Number
+    Default: 14
+    AllowedValues:
+      - 1
+      - 3
+      - 5
+      - 7
+      - 14
+      - 30
+      - 60
+      - 90
+      - 120
+      - 150
+      - 180
+      - 365
+      - 400
+      - 545
+      - 731
+      - 1827
+      - 3653
+    ConstraintDescription: "Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogRetentionEC2LinuxAuthentication
+  ##---------------------------------------------------------------------------------------
+  LogRetentionEC2LinuxAuthentication:
+    Description: "Log Retention (days): EC2LinuxAuthentication"
+    Type: Number
+    Default: 14
+    AllowedValues:
+      - 1
+      - 3
+      - 5
+      - 7
+      - 14
+      - 30
+      - 60
+      - 90
+      - 120
+      - 150
+      - 180
+      - 365
+      - 400
+      - 545
+      - 731
+      - 1827
+      - 3653
+    ConstraintDescription: "Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653"
+
+  ##---------------------------------------------------------------------------------------
+  # object:Logs/LogRetentionEC2LinuxHIDSAlerts
+  ##---------------------------------------------------------------------------------------
+  LogRetentionEC2LinuxHIDSAlerts:
+    Description: "Log Retention (days): EC2LinuxHIDSAlerts"
+    Type: Number
+    Default: 14
+    AllowedValues:
+      - 1
+      - 3
+      - 5
+      - 7
+      - 14
+      - 30
+      - 60
+      - 90
+      - 120
+      - 150
+      - 180
+      - 365
+      - 400
+      - 545
+      - 731
+      - 1827
+      - 3653
+    ConstraintDescription: "Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogRetentionEC2LinuxHostMessages
+  ##---------------------------------------------------------------------------------------
+  LogRetentionEC2LinuxHostMessages:
+    Description: "Log Retention (days): EC2LinuxHostMessages"
+    Type: Number
+    Default: 14
+    AllowedValues:
+      - 1
+      - 3
+      - 5
+      - 7
+      - 14
+      - 30
+      - 60
+      - 90
+      - 120
+      - 150
+      - 180
+      - 365
+      - 400
+      - 545
+      - 731
+      - 1827
+      - 3653
+    ConstraintDescription: "Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogRetentionNetworkLBIpAddress
+  ##---------------------------------------------------------------------------------------
+  LogRetentionNetworkLBIpAddress:
+    Description: "Log Retention (days): NetworkLBIpAddress"
+    Type: Number
+    Default: 14
+    AllowedValues:
+      - 1
+      - 3
+      - 5
+      - 7
+      - 14
+      - 30
+      - 60
+      - 90
+      - 120
+      - 150
+      - 180
+      - 365
+      - 400
+      - 545
+      - 731
+      - 1827
+      - 3653
+    ConstraintDescription: "Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogRetentionStackReference
+  ##---------------------------------------------------------------------------------------
+  LogRetentionStackReference:
+    Description: "Log Retention (days): StackReference"
+    Type: Number
+    Default: 14
+    AllowedValues:
+      - 1
+      - 3
+      - 5
+      - 7
+      - 14
+      - 30
+      - 60
+      - 90
+      - 120
+      - 150
+      - 180
+      - 365
+      - 400
+      - 545
+      - 731
+      - 1827
+      - 3653
+    ConstraintDescription: "Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogRetentionVPCSubnetCIDR
+  ##---------------------------------------------------------------------------------------
+  LogRetentionVPCSubnetCIDR:
+    Description: "Log Retention (days): VPCSubnetCIDR"
+    Type: Number
+    Default: 14
+    AllowedValues:
+      - 1
+      - 3
+      - 5
+      - 7
+      - 14
+      - 30
+      - 60
+      - 90
+      - 120
+      - 150
+      - 180
+      - 365
+      - 400
+      - 545
+      - 731
+      - 1827
+      - 3653
+    ConstraintDescription: "Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653"
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/S3BucketArtifactsRegionName
+  ##---------------------------------------------------------------------------------------
+  S3BucketArtifactsRegionName:
+    Description: "S3: Bucket Name (Artifacts - Region)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/S3BucketLogsRegionName
+  ##---------------------------------------------------------------------------------------
+  S3BucketLogsRegionName:
+    Description: "S3: Bucket Name (Logs - Region)"
+    Type: String
+
+##-------------------------------------------------------------------------------------------------
+Mappings:
+  ##---------------------------------------------------------------------------------------
+  # object: AWS/AccountsELB
+  # notes:
+  #   - Amazon ELB Source Accounts
+  ##---------------------------------------------------------------------------------------
+  AccountsELB:
+    us-east-1:
+      "accountID": "127311923021"
+    us-east-2:
+      "accountID": "033677994240"
+    us-west-1:
+      "accountID": "027434742980"
+    us-west-2:
+      "accountID": "797873946194"
+    ca-central-1:
+      "accountID": "985666609251"
+    eu-west-1:
+      "accountID": "156460612806"
+    eu-central-1:
+      "accountID": "054676820928"
+    eu-west-2:
+      "accountID": "652711504416"
+    ap-northeast-1:
+      "accountID": "582318560864"
+    ap-northeast-2:
+      "accountID": "600734575887"
+    ap-southeast-1:
+      "accountID": "114774131450"
+    ap-southeast-2:
+      "accountID": "783225319266"
+    ap-south-1:
+      "accountID": "718504428378"
+    sa-east-1:
+      "accountID": "507241528517"
+    us-gov-west-1:
+      "accountID": "048591011584"
+    cn-north-1:
+      "accountID": "638102146993"
+
+##-------------------------------------------------------------------------------------------------
+Conditions:
+  ##---------------------------------------------------------------------------------------
+  # object: GuardDuty/EnabledGuardDuty
+  ##---------------------------------------------------------------------------------------
+  EnabledGuardDuty:
+    !Equals [ !Ref "EnableGuardDuty", "true" ]
+
+##-------------------------------------------------------------------------------------------------
+Resources:
+  ##---------------------------------------------------------------------------------------
+  # object: GuardDuty/Detector/Region
+  ##---------------------------------------------------------------------------------------
+  GuardDutyDetectorRegion:
+    Condition: "EnabledGuardDuty"
+    Type: "AWS::GuardDuty::Detector"
+    Properties:
+      Enable: "true"
+      FindingPublishingFrequency: !Ref "GuardDutyFindingPublishingFrequency"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/LambdaFunctionAMILookupAmazonLinux2
+  ##---------------------------------------------------------------------------------------
+  IAMRoleLambdaFunctionAMILookupAmazonLinux2:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join [ "_", [ "lambda", "ami-lookup-amazonlinux2", !Ref "AWS::Region" ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+      - PolicyName: "lambda"
+        PolicyDocument:
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "logs:*"
+              Resource: !Join [ "", [ "arn:aws:logs:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":log-group:/aws/lambda/", "ami-lookup-amazonlinux2", ":*" ] ]
+            - Effect: "Allow"
+              Action:
+                - "ec2:DescribeImages"
+              Resource: "*"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/LambdaFunctionAMILookupCustom
+  ##---------------------------------------------------------------------------------------
+  IAMRoleLambdaFunctionAMILookupCustom:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join [ "_", [ "lambda", "ami-lookup-custom", !Ref "AWS::Region" ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+        - PolicyName: "lambda"
+          PolicyDocument:
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "logs:*"
+                Resource: !Join [ "", [ "arn:aws:logs:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":log-group:/aws/lambda/", "ami-lookup-custom", ":*" ] ]
+              - Effect: "Allow"
+                Action:
+                  - "ec2:DescribeImages"
+                Resource: "*"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/LambdaFunctionNetworkLBIpAddress
+  ##---------------------------------------------------------------------------------------
+  IAMRoleLambdaFunctionNetworkLBIpAddress:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join [ "_", [ "lambda", "network-lb-ip-address", !Ref "AWS::Region" ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+        - PolicyName: "lambda"
+          PolicyDocument:
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "logs:*"
+                Resource: !Join [ "", [ "arn:aws:logs:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":log-group:/aws/lambda/", "network-lb-ip-address", ":*" ] ]
+              - Effect: "Allow"
+                Action:
+                  - "ec2:DescribeNetworkInterfaces"
+                Resource: "*"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/LambdaFunctionStackReference
+  ##---------------------------------------------------------------------------------------
+  IAMRoleLambdaFunctionStackReference:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join [ "_", [ "lambda", "stack-reference", !Ref "AWS::Region" ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+        - PolicyName: "lambda"
+          PolicyDocument:
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "logs:*"
+                Resource: !Join [ "", [ "arn:aws:logs:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":log-group:/aws/lambda/", "stack-reference", ":*" ] ]
+              - Effect: "Allow"
+                Action:
+                  - "cloudformation:DescribeStacks"
+                Resource: "*"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/LambdaFunctionVPCSubnetCIDR
+  ##---------------------------------------------------------------------------------------
+  IAMRoleLambdaFunctionVPCSubnetCIDR:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join [ "_", [ "lambda", "vpc-subnet-cidr", !Ref "AWS::Region" ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+        - PolicyName: "lambda"
+          PolicyDocument:
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "logs:*"
+                Resource: !Join [ "", [ "arn:aws:logs:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":log-group:/aws/lambda/", "vpc-subnet-cidr", ":*" ] ]
+
+  ##---------------------------------------------------------------------------------------
+  # object: Lambda/Function/AMILookupAmazonLinux2
+  ##---------------------------------------------------------------------------------------
+  LambdaFunctionAMILookupAmazonLinux2:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "ami-lookup-amazonlinux2"
+      Description: "AMI Lookup - AmazonLinux2"
+      Handler: "index.handler"
+      Code:
+        ZipFile:
+          !Sub |
+            var response = require('cfn-response');
+            exports.handler = function(event, context) {
+              if (event.RequestType == 'Delete') {
+                response.send(event, context, response.SUCCESS);
+                return;
+              }
+              var regionName = event.ResourceProperties.Region;
+              var responseData = {};
+              if (regionName) {
+                var aws = require('aws-sdk');
+                var ec2 = new aws.EC2({region: regionName});
+                var describeImagesParams = {
+                  Filters: [{ Name: 'name', Values: ['amzn2-ami-hvm-2.0.*x86_64-gp2']}],
+                  Owners: ['amazon']
+                };
+                ec2.describeImages(describeImagesParams, function(err, describeImagesResult) {
+                  if (err) {
+                    responseData = {Error: 'DescribeImages call failed'};
+                    response.send(event, context, response.FAILED, responseData);
+                  }
+                  else {
+                    var images = describeImagesResult.Images;
+                    images.sort(function(x, y) { return y.Name.localeCompare(x.Name); });
+                    for (var j = 0; j < images.length; j++) {
+                      if (isBeta(images[j].Name)) continue;
+                      responseData['Id'] = images[j].ImageId;
+                      break;
+                    }
+                  }
+                  response.send(event, context, response.SUCCESS, responseData);
+                });
+              } else {
+                responseData = {Error: 'Region name not specified'};
+                response.send(event, context, response.FAILED, responseData);
+              }
+            };
+            function isBeta(imageName){return imageName.toLowerCase().indexOf('beta') > -1 || imageName.toLowerCase().indexOf('.rc') > -1;}
+      Role: !GetAtt "IAMRoleLambdaFunctionAMILookupAmazonLinux2.Arn"
+      Runtime: "nodejs8.10"
+      MemorySize: "128"
+      Timeout: "180"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Lambda/Function/AMILookupCustom
+  ##---------------------------------------------------------------------------------------
+  LambdaFunctionAMILookupCustom:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "ami-lookup-custom"
+      Description: "AMI Lookup - Custom"
+      Handler: "index.handler"
+      Code:
+        ZipFile:
+          !Sub |
+            var response = require('cfn-response');
+            exports.handler = function(event, context) {
+              if (event.RequestType == 'Delete') {
+                response.send(event, context, response.SUCCESS);
+                return;
+              }
+              var regionName = event.ResourceProperties.Region;
+              var amiName = event.ResourceProperties.AMINamePrepend + ".*." + event.ResourceProperties.AMINameAppend;
+              var responseData = {};
+              if (regionName) {
+                var aws = require('aws-sdk');
+                var ec2 = new aws.EC2({region: regionName});
+                var describeImagesParams = {
+                  Filters: [{ Name: 'name', Values: [ amiName ]}]
+                };
+                ec2.describeImages(describeImagesParams, function(err, describeImagesResult) {
+                  if (err) {
+                    responseData = {Error: 'DescribeImages call failed'};
+                    response.send(event, context, response.FAILED, responseData);
+                  }
+                  else {
+                    var images = describeImagesResult.Images;
+                    images.sort(function(x, y) { return y.Name.localeCompare(x.Name); });
+                    for (var j = 0; j < images.length; j++) {
+                      if (isDevelopment(images[j].Name)) continue;
+                      responseData['Id'] = images[j].ImageId;
+                      break;
+                    }
+                  }
+                  response.send(event, context, response.SUCCESS, responseData);
+                });
+              } else {
+                responseData = {Error: 'Region name not specified'};
+                response.send(event, context, response.FAILED, responseData);
+              }
+            };
+            function isDevelopment(imageName){return imageName.toLowerCase().indexOf('beta') > -1 || imageName.toLowerCase().indexOf('.rc') > -1;}
+      Role: !GetAtt "IAMRoleLambdaFunctionAMILookupCustom.Arn"
+      Runtime: "nodejs8.10"
+      MemorySize: "128"
+      Timeout: "180"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Lambda/Function/NetworkLBIpAddress
+  ##---------------------------------------------------------------------------------------
+  LambdaFunctionNetworkLBIpAddress:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "network-lb-ip-address"
+      Description: "Network LB Ip Address"
+      Handler: "index.handler"
+      Code:
+        ZipFile:
+          !Sub |
+            var response = require('cfn-response');
+            exports.handler = function(event, context) {
+              if (event.RequestType == 'Delete') {
+                response.send(event, context, response.SUCCESS);
+                return;
+              }
+              var regionName = event.ResourceProperties.Region;
+              var loadbalancerName = event.ResourceProperties.LoadBalancerName;
+              var responseData = {};
+              if (regionName && loadbalancerName) {
+                var aws = require('aws-sdk');
+                var ec2 = new aws.EC2({region: regionName});
+                var describeNetworkInterfaceParams = {
+                  Filters: [{ Name: 'description', Values: ["*" + loadbalancerName + "*"]}]
+                };
+                ec2.describeNetworkInterfaces(describeNetworkInterfaceParams, function(err, data) {
+                  if (err) {
+                      responseData = {Error: 'DescribeNetworkInterfaces call failed'};
+                      response.send(event, context, response.FAILED, responseData);
+                  } else {
+                    var interfaces = data.NetworkInterfaces;
+                    interfaces.sort(function(x, y) { return x.AvailabilityZone.localeCompare(y.AvailabilityZone); });
+                    var j = 1;
+                    interfaces.forEach(function(output) {
+                      responseData["Subnet" + j + "IP"] = output.PrivateIpAddress;
+                      j++;
+                    });
+                    response.send(event, context, response.SUCCESS, responseData);
+                  }
+                });
+              } else {
+                responseData = {Error: 'Region name or LoadBalancer Name not specified'};
+                response.send(event, context, response.FAILED, responseData);
+              }
+            };
+      Role: !GetAtt "IAMRoleLambdaFunctionNetworkLBIpAddress.Arn"
+      Runtime: "nodejs8.10"
+      MemorySize: "128"
+      Timeout: "180"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Lambda/Function/StackReference
+  ##---------------------------------------------------------------------------------------
+  LambdaFunctionStackReference:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "stack-reference"
+      Description: "Stack Reference"
+      Handler: "index.handler"
+      Code:
+        ZipFile:
+          !Sub |
+            var response = require('cfn-response');
+            exports.handler = function(event, context) {
+              if (event.RequestType == 'Delete') {
+                response.send(event, context, response.SUCCESS);
+                return;
+              }
+              var regionName = event.ResourceProperties.Region;
+              var stackName = event.ResourceProperties.StackName;
+              var responseData = {};
+              if (regionName && stackName) {
+                var aws = require('aws-sdk');
+                var cfn = new aws.CloudFormation({region: regionName});
+                cfn.describeStacks({StackName: stackName}, function(err, data) {
+                  if (err) {
+                    responseData = {Error: 'DescribeStacks call failed'};
+                    response.send(event, context, response.FAILED, responseData);
+                  }
+                  else {
+                    data.Stacks[0].Outputs.forEach(function(output) {
+                      responseData[output.OutputKey] = output.OutputValue;
+                    });
+                    response.send(event, context, response.SUCCESS, responseData);
+                  }
+                });
+              } else {
+                responseData = {Error: 'Stack name not specified'};
+                response.send(event, context, response.FAILED, responseData);
+              }
+            };
+      Role: !GetAtt "IAMRoleLambdaFunctionStackReference.Arn"
+      Runtime: "nodejs8.10"
+      MemorySize: "128"
+      Timeout: "180"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Lambda/Function/VPCSubnetCIDR
+  # notes:
+  #   - test payload:
+  #     {
+  #       "StackId": "arn:aws:cloudformation:us-east-1:EXAMPLE/stack-name/guid",
+  #       "ResponseURL": "http://pre-signed-S3-url-for-response",
+  #       "RequestType": "Create",
+  #       "ResourceType": "Custom::TestResource",
+  #       "RequestId": "unique id for this create request",
+  #       "LogicalResourceId": "MyTestResource",
+  #       "ResourceProperties": {
+  #         "IpNetwork": "10.0.0.0",
+  #         "IpNetmask": "19"
+  #       }
+  #     }
+  ##---------------------------------------------------------------------------------------
+  LambdaFunctionVPCSubnetCIDR:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "vpc-subnet-cidr"
+      Description: "VPC Subnet CIDR"
+      Handler: "index.handler"
+      Code:
+        ZipFile:
+          !Sub |
+            var response = require('cfn-response');
+            var subnetMap = {
+              16:{'big':'19','small':'20'},
+              17:{'big':'20','small':'21'},
+              18:{'big':'21','small':'22'},
+              19:{'big':'22','small':'23'},
+              20:{'big':'23','small':'24'},
+              21:{'big':'24','small':'25'},
+              22:{'big':'25','small':'26'},
+              23:{'big':'26','small':'27'},
+              24:{'big':'27','small':'28'},
+              25:{'big':'28','small':'29'}
+            };
+            var i;
+            var cidr_big = [];
+            var netmask_big = [];
+            var cidr_small = [];
+            var netmask_small = [];
+            var ipConversion = {
+              toDecimal : function(ipString) {
+                var d = ipString.split('.');
+                return ((((((+d[0])*256) + (+d[1]))*256) + (+d[2]))*256) + (+d[3]);
+              },
+              toString : function(ipNum) {
+                var d = ipNum % 256;
+                for( var i = 3; i > 0; i-- ) {
+                  ipNum = Math.floor( ipNum / 256 );
+                  d = ipNum % 256 + '.' + d;
+                }
+                return d;
+              },
+              CIDRstart : function(ipString,ipOffset) {
+                return ipConversion.toString(ipConversion.toDecimal(ipString)+parseInt(ipOffset));
+              }
+            };
+            exports.handler = function(event, context) {
+              if (event.RequestType == 'Delete') {
+                response.send(event, context, response.SUCCESS);
+                return;
+              }
+              var net = event.ResourceProperties.IpNetwork;
+              var mask = event.ResourceProperties.IpNetmask;
+              var responseData = {};
+              if (net && mask) {
+                var offset = 0;
+                for (i = 1; i <= 8; i++) {
+                  netmask_big[i] = subnetMap[mask]['big'];
+                  cidr_big[i] = ipConversion.CIDRstart(net,offset);
+                  offset += Math.pow(2, (32 - subnetMap[mask]['big']));
+                }
+                var offset = 0;
+                for (i = 1; i <= 16; i++) {
+                  netmask_small[i] = subnetMap[mask]['small'];
+                  cidr_small[i] = ipConversion.CIDRstart(net,offset);
+                  offset += Math.pow(2, (32 - subnetMap[mask]['small']));
+                }
+                responseData['subnet-public-1-netmask'] = netmask_small[13];
+                responseData['subnet-public-1-cidrstart'] = cidr_small[13];
+                responseData['subnet-public-2-netmask'] = netmask_small[14];
+                responseData['subnet-public-2-cidrstart'] = cidr_small[14];
+                responseData['subnet-public-3-netmask'] = netmask_small[15];
+                responseData['subnet-public-3-cidrstart'] = cidr_small[15];
+                responseData['subnet-private-1-netmask'] = netmask_big[1];
+                responseData['subnet-private-1-cidrstart'] = cidr_big[1];
+                responseData['subnet-private-2-netmask'] = netmask_big[2];
+                responseData['subnet-private-2-cidrstart'] = cidr_big[2];
+                responseData['subnet-private-3-netmask'] = netmask_big[3];
+                responseData['subnet-private-3-cidrstart'] = cidr_big[3];
+                responseData['subnet-restricted-1-netmask'] = netmask_big[4];
+                responseData['subnet-restricted-1-cidrstart'] = cidr_big[4];
+                responseData['subnet-restricted-2-netmask'] = netmask_big[5];
+                responseData['subnet-restricted-2-cidrstart'] = cidr_big[5];
+                responseData['subnet-restricted-3-netmask'] = netmask_big[6];
+                responseData['subnet-restricted-3-cidrstart'] = cidr_big[6];
+                response.send(event, context, response.SUCCESS, responseData);
+              } else {
+                responseData = {Error: 'IP Network or IP Netmask not specified'};
+                response.send(event, context, response.FAILED, responseData);
+              }
+            };
+      Role: !GetAtt "IAMRoleLambdaFunctionVPCSubnetCIDR.Arn"
+      Runtime: "nodejs8.10"
+      MemorySize: "128"
+      Timeout: "180"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/EC2LinuxAuthentication
+  ##---------------------------------------------------------------------------------------
+  LogGroupEC2LinuxAuthentication:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: "/aws/ec2/linux/authentication"
+      RetentionInDays: !Ref "LogRetentionEC2LinuxAuthentication"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/EC2LinuxHIDSAlerts
+  ##---------------------------------------------------------------------------------------
+  LogGroupEC2LinuxHIDSAlerts:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: "/aws/ec2/linux/hids_alerts"
+      RetentionInDays: !Ref "LogRetentionEC2LinuxHIDSAlerts"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/EC2LinuxHostMessages
+  ##---------------------------------------------------------------------------------------
+  LogGroupEC2LinuxHostMessages:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: "/aws/ec2/linux/host_messages"
+      RetentionInDays: !Ref "LogRetentionEC2LinuxHostMessages"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/LambdaFunctionAMILookupAmazonLinux2
+  ##---------------------------------------------------------------------------------------
+  LogGroupLambdaFunctionAMILookupAmazonLinux2:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionAMILookupAmazonLinux2}"
+      RetentionInDays: !Ref "LogRetentionAMILookupAmazonLinux2"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/LambdaFunctionAMILookupCustom
+  ##---------------------------------------------------------------------------------------
+  LogGroupLambdaFunctionAMILookupCustom:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionAMILookupCustom}"
+      RetentionInDays: !Ref "LogRetentionAMILookupCustom"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/LambdaFunctionNetworkLBIpAddress
+  ##---------------------------------------------------------------------------------------
+  LogGroupLambdaFunctionNetworkLBIpAddress:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionNetworkLBIpAddress}"
+      RetentionInDays: !Ref "LogRetentionNetworkLBIpAddress"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/LambdaFunctionStackReference
+  ##---------------------------------------------------------------------------------------
+  LogGroupLambdaFunctionStackReference:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionStackReference}"
+      RetentionInDays: !Ref "LogRetentionStackReference"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/LambdaFunctionVPCSubnetCIDR
+  ##---------------------------------------------------------------------------------------
+  LogGroupLambdaFunctionVPCSubnetCIDR:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionVPCSubnetCIDR}"
+      RetentionInDays: !Ref "LogRetentionVPCSubnetCIDR"
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/Bucket/ArtifactsRegion
+  ##---------------------------------------------------------------------------------------
+  S3BucketArtifacts:
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: "Retain"
+    Properties:
+      BucketName: !Ref "S3BucketArtifactsRegionName"
+      BucketEncryption:
+          ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      AccessControl: "Private"
+      LoggingConfiguration:
+        DestinationBucketName: !Join [ "", [ !Ref "S3BucketLogs" ] ]
+        LogFilePrefix: !Join [ "", [ "s3/", !Ref "S3BucketLogs", "/" ] ]
+      Tags:
+        - Key: "Name"
+          Value: !Join [ "", [ !Ref "S3BucketArtifactsRegionName" ] ]
+    DependsOn:
+      - "S3BucketLogs"
+      - "S3BucketPolicyLogs"
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/Bucket/LogsRegion
+  ##---------------------------------------------------------------------------------------
+  S3BucketLogs:
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: "Retain"
+    Properties:
+      BucketName: !Ref "S3BucketLogsRegionName"
+      BucketEncryption:
+          ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      AccessControl: "LogDeliveryWrite"
+      Tags:
+        - Key: "Name"
+          Value: !Ref "S3BucketLogsRegionName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/BucketPolicy/LogsRegion
+  ##---------------------------------------------------------------------------------------
+  S3BucketPolicyLogs:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Ref "S3BucketLogs"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Sid: "AWSELBAllowWrite"
+            Effect: "Allow"
+            Principal:
+              AWS: !FindInMap ["AccountsELB", !Ref "AWS::Region", "accountID"]
+            Action: "s3:PutObject"
+            Resource:
+              - !Join [ "", [ "arn:aws:s3:::", !Ref "S3BucketLogsRegionName", "/elb/*" ] ]
+          -
+            Sid: "AWSCloudTrailAclCheck"
+            Effect: "Allow"
+            Principal:
+              Service: "cloudtrail.amazonaws.com"
+            Action: "s3:GetBucketAcl"
+            Resource:
+              - !Join [ "", [ "arn:aws:s3:::", !Ref "S3BucketLogsRegionName" ] ]
+          -
+            Sid: "AWSCloudTrailWrite"
+            Effect: "Allow"
+            Principal:
+              Service: "cloudtrail.amazonaws.com"
+            Action: "s3:PutObject"
+            Resource:
+              - !Join [ "", [ "arn:aws:s3:::", !Ref "S3BucketLogsRegionName", "/AWSLogs/", !Ref "AWS::AccountId", "/*" ] ]
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: "bucket-owner-full-control"
+          -
+            Sid: "AWSConfigBucketPermissionsCheck"
+            Effect: "Allow"
+            Principal:
+              Service: "config.amazonaws.com"
+            Action: "s3:GetBucketAcl"
+            Resource:
+              - !Join [ "", [ "arn:aws:s3:::", !Ref "S3BucketLogsRegionName" ] ]
+          -
+            Sid: "AWSConfigBucketExistenceCheck"
+            Effect: "Allow"
+            Principal:
+              Service: "config.amazonaws.com"
+            Action: "s3:ListBucket"
+            Resource:
+              - !Join [ "", [ "arn:aws:s3:::", !Ref "S3BucketLogsRegionName" ] ]
+          -
+            Sid: "AWSConfigBucketDelivery"
+            Effect: "Allow"
+            Principal:
+              Service: "config.amazonaws.com"
+            Action: "s3:PutObject"
+            Resource:
+              - !Join [ "", [ "arn:aws:s3:::", !Ref "S3BucketLogsRegionName", "/AWSLogs/", !Ref "AWS::AccountId", "/Config/*" ] ]
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: "bucket-owner-full-control"
+
+##-------------------------------------------------------------------------------------------------
+Outputs:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Contact
+  ##---------------------------------------------------------------------------------------
+  Contact:
+    Description: "Details: Contact"
+    Value: !Select [1, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Contact"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Environment
+  ##---------------------------------------------------------------------------------------
+  Environment:
+    Description: "Details: Environment"
+    Value: !Select [3, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Environment"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionAbbr
+  ##---------------------------------------------------------------------------------------
+  FunctionAbbr:
+    Description: "Details: FunctionAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionName
+  ##---------------------------------------------------------------------------------------
+  FunctionName:
+    Description: "Details: FunctionName"
+    Value: !Select [0, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: LastUpdate"
+    Value: !Ref "LastUpdate"
+    Export:
+      Name: !Sub "${AWS::StackName}-LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationAbbr
+  ##---------------------------------------------------------------------------------------
+  OrganizationAbbr:
+    Description: "Details: OrganizationAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationName
+  ##---------------------------------------------------------------------------------------
+  OrganizationName:
+    Description: "Details: OrganizationName"
+    Value: !Select [0, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner"
+    Value: !Select [0, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Owner"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectAbbr
+  ##---------------------------------------------------------------------------------------
+  ProjectAbbr:
+    Description: "Details: ProjectAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectName
+  ##---------------------------------------------------------------------------------------
+  ProjectName:
+    Description: "Details: ProjectName"
+    Value: !Select [0, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/S3BucketArtifacts
+  ##---------------------------------------------------------------------------------------
+  S3BucketArtifacts:
+    Description: "S3 Bucket: Artifacts"
+    Value: !Ref "S3BucketArtifacts"
+    Export:
+      Name: !Sub "${AWS::StackName}-S3BucketArtifacts"
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/S3BucketLogs
+  ##---------------------------------------------------------------------------------------
+  S3BucketLogs:
+    Description: "S3 Bucket: Logs"
+    Value: !Ref "S3BucketLogs"
+    Export:
+      Name: !Sub "${AWS::StackName}-S3BucketLogs"
+

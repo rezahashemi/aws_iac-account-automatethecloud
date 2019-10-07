@@ -1,0 +1,43 @@
+Name:                                       account-initialize-us-east-1
+Description:                                Account - Initialize - us-east-1
+Updated:                                    2019/09/25 13:30:00 EST
+
+Details:
+  Project:                                  Account|account
+  Function:                                 Initialize us-east-1|initialize-us-east-1
+  Organization:                             Account|account|us-east-1|global
+  Account:                                  AutomateTheCloud|atc|480685085376
+  Owner:                                    David Singer|aws-ops@automatethe.cloud
+  DeploymentTimeout:                        45
+
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  #-- S3 ------------------------------------------------------------------------------
+  S3BucketLogsRegionName:                   logs-us-east-1-480685085376
+  S3BucketArtifactsRegionName:              artifacts-us-east-1-480685085376
+
+  #-- EC2 Logs ------------------------------------------------------------------------
+  LogRetentionEC2LinuxHIDSAlerts:           365
+  LogRetentionEC2LinuxHostMessages:         365
+  LogRetentionEC2LinuxAuthentication:       365
+
+  #-- Lambda --------------------------------------------------------------------------
+  LogRetentionAMILookupCustom:              30
+  LogRetentionAMILookupAmazonLinux2:        30
+  LogRetentionNetworkLBIpAddress:           30
+  LogRetentionStackReference:               7
+  LogRetentionVPCSubnetCIDR:                3653
+
+  #-- GuardDuty -------------------------------------------------------------------------
+  EnableGuardDuty:                          false
+  GuardDutyFindingPublishingFrequency:      SIX_HOURS
+
+##-------------------------------------------------------------------------------------------------
+Paradigm:
+  Templates:
+    - Account/Initialize_Region
+  Parameters:
+  Mappings:
+  Conditions:
+  Resources:
+  Outputs:

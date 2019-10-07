@@ -1,0 +1,13 @@
+[
+  { "ParameterKey": "Account", "ParameterValue": "AutomateTheCloud|atc|480685085376" },
+  { "ParameterKey": "Function", "ParameterValue": "SAML IDP|saml-idp" },
+  { "ParameterKey": "LastUpdate", "ParameterValue": "2019-09-28 23:43:55.124 UTC" },
+  { "ParameterKey": "Organization", "ParameterValue": "Account|account|us-east-1|prd" },
+  { "ParameterKey": "Owner", "ParameterValue": "David Singer|aws-ops@automatethe.cloud" },
+  { "ParameterKey": "Project", "ParameterValue": "Account|account" },
+  { "ParameterKey": "SAMLMaxSessionDurationPrivileged", "ParameterValue": "43200" },
+  { "ParameterKey": "SAMLMaxSessionDurationUser", "ParameterValue": "43200" },
+  { "ParameterKey": "SAMLMetadataBucket", "ParameterValue": "artifacts-us-east-1-480685085376" },
+  { "ParameterKey": "SAMLMetadataFilename", "ParameterValue": "saml/GoogleIDPMetadata-automatethe.cloud.xml" },
+  { "ParameterKey": "SAMLProviderName", "ParameterValue": "IDP-ATC-GoogleApps" } 
+]

@@ -1,0 +1,9 @@
+[
+  { "Key": "Organization", "Value": "Account" },
+  { "Key": "Project", "Value": "Account" },
+  { "Key": "Function", "Value": "Config ca-central-1" },
+  { "Key": "Environment", "Value": "global" },
+  { "Key": "Region", "Value": "ca-central-1" },
+  { "Key": "Owner", "Value": "David Singer" },
+  { "Key": "Contact", "Value": "aws-ops@automatethe.cloud" }
+]

@@ -1,0 +1,288 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Account - Config - eu-west-2"
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigDeliveryFrequency
+  ##---------------------------------------------------------------------------------------
+  ConfigDeliveryFrequency:
+    Description: "Config Deliver Frequency"
+    Type: String
+    Default: "One_Hour"
+    AllowedValues:
+      - "One_Hour"
+      - "Six_Hours"
+      - "Three_Hours"
+      - "Twelve_Hours"
+      - "TwentyFour_Hours"
+    ConstraintDescription: "Allowed Values: One_Hour, Six_Hours, Three_Hours, Twelve_Hours, TwentyFour_Hours"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigIncludeGlobalResourceTypes
+  ##---------------------------------------------------------------------------------------
+  ConfigIncludeGlobalResourceTypes:
+    Description: "Config: Include Global Resource Types"
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - ""
+      - "true"
+      - "false"
+    ConstraintDescription: "true/false"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Account
+  ##---------------------------------------------------------------------------------------
+  Account:
+    Description: "Details: Account (AccountName | AccountAbbr | AccountNumber)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Function
+  ##---------------------------------------------------------------------------------------
+  Function:
+    Description: "Details: Function (FunctionName | FunctionAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: Last Update"
+    Type: String
+    Default: 0
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Organization
+  ##---------------------------------------------------------------------------------------
+  Organization:
+    Description: "Details: Organization (OrganizationName | OrganizationAbbr | region | environment)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner (Owner | Contact)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Project
+  ##---------------------------------------------------------------------------------------
+  Project:
+    Description: "Details: Project (ProjectName | ProjectAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/S3BucketLogsGlobalName
+  ##---------------------------------------------------------------------------------------
+  S3BucketLogsGlobalName:
+    Description: "S3: Bucket Name (Logs - Global)"
+    Type: String
+
+##-------------------------------------------------------------------------------------------------
+Resources:
+  ##---------------------------------------------------------------------------------------
+  # object: Config/ConfigurationRecorder/Region
+  ##---------------------------------------------------------------------------------------
+  ConfigConfigurationRecorderRegion:
+    Type: "AWS::Config::ConfigurationRecorder"
+    Properties:
+      Name: !Join [ "", [ "config-", !Ref "AWS::Region" ] ]
+      RecordingGroup:
+        AllSupported: "true"
+        IncludeGlobalResourceTypes: !Ref "ConfigIncludeGlobalResourceTypes"
+      RoleARN: !GetAtt "RoleConfig.Arn"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Config/DeliveryChannel/Region
+  ##---------------------------------------------------------------------------------------
+  ConfigDeliveryChannelRegion:
+    Type: "AWS::Config::DeliveryChannel"
+    Properties:
+      Name: !Join [ "", [ "config-", !Ref "AWS::Region" ] ]
+      ConfigSnapshotDeliveryProperties:
+        DeliveryFrequency: !Ref "ConfigDeliveryFrequency"
+      S3BucketName: !Ref "S3BucketLogsGlobalName"
+      SnsTopicARN: !Ref "SNSTopicConfig"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/Config
+  ##---------------------------------------------------------------------------------------
+  RoleConfig:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join [ "_", [ "config", !Ref "AWS::Region" ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "config.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSConfigRole"
+      Policies:
+        - PolicyName: "config"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "s3:GetBucketAcl"
+                Resource: !Join ['', ['arn:aws:s3:::', !Ref "S3BucketLogsGlobalName"]]
+              - Effect: "Allow"
+                Action:
+                  - "s3:PutObject"
+                Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3BucketLogsGlobalName', /AWSLogs/, !Ref 'AWS::AccountId', /*]]
+                Condition:
+                  StringEquals:
+                    s3:x-amz-acl: bucket-owner-full-control
+              - Effect: "Allow"
+                Action:
+                  - "sns:Publish"
+                Resource: !Ref "SNSTopicConfig"
+              - Effect: "Allow"
+                Action:
+                  - "config:Put*"
+                Resource: "*"
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/Topic/Config
+  ##---------------------------------------------------------------------------------------
+  SNSTopicConfig:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: !Join [ "-", ["config", !Ref "AWS::Region"] ]
+      DisplayName: !Join [ "-", ["config", !Ref "AWS::Region"] ]
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/TopicPolicy/Config
+  ##---------------------------------------------------------------------------------------
+  SNSTopicPolicyConfig:
+    Type: "AWS::SNS::TopicPolicy"
+    Properties:
+      PolicyDocument:
+        Id: ConfigTopicPolicy
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: config.amazonaws.com
+          Action: SNS:Publish
+          Resource: '*'
+      Topics: [!Ref "SNSTopicConfig"]
+
+##-------------------------------------------------------------------------------------------------
+Outputs:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Contact
+  ##---------------------------------------------------------------------------------------
+  Contact:
+    Description: "Details: Contact"
+    Value: !Select [1, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Contact"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Environment
+  ##---------------------------------------------------------------------------------------
+  Environment:
+    Description: "Details: Environment"
+    Value: !Select [3, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Environment"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionAbbr
+  ##---------------------------------------------------------------------------------------
+  FunctionAbbr:
+    Description: "Details: FunctionAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionName
+  ##---------------------------------------------------------------------------------------
+  FunctionName:
+    Description: "Details: FunctionName"
+    Value: !Select [0, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: LastUpdate"
+    Value: !Ref "LastUpdate"
+    Export:
+      Name: !Sub "${AWS::StackName}-LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationAbbr
+  ##---------------------------------------------------------------------------------------
+  OrganizationAbbr:
+    Description: "Details: OrganizationAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationName
+  ##---------------------------------------------------------------------------------------
+  OrganizationName:
+    Description: "Details: OrganizationName"
+    Value: !Select [0, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner"
+    Value: !Select [0, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Owner"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectAbbr
+  ##---------------------------------------------------------------------------------------
+  ProjectAbbr:
+    Description: "Details: ProjectAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectName
+  ##---------------------------------------------------------------------------------------
+  ProjectName:
+    Description: "Details: ProjectName"
+    Value: !Select [0, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/Topic/ConfigArn
+  ##---------------------------------------------------------------------------------------
+  SNSTopicConfigArn:
+    Description: "SNS Topic (Config): ARN"
+    Value: !Ref "SNSTopicConfig"
+    Export:
+      Name: !Sub "${AWS::StackName}-SNSTopicConfigArn"
+
+  ##---------------------------------------------------------------------------------------
+  # object: SNS/Topic/ConfigTopicName
+  ##---------------------------------------------------------------------------------------
+  SNSTopicConfigTopicName:
+    Description: "SNS Topic (Config): Topic Name"
+    Value: !GetAtt "SNSTopicConfig.TopicName"
+    Export:
+      Name: !Sub "${AWS::StackName}-SNSTopicConfigTopicName"
+

@@ -1,0 +1,38 @@
+Name:                                       infrastructure-vpcpeering-share-us-east-1
+Description:                                Infrastructure - VPC Peering: Shared Services - us-east-1
+Updated:                                    2019/09/27 00:45:00 EST
+
+Details:
+  Project:                                  Infrastructure|infrastructure
+  Function:                                 VPC Peering|vpcpeering
+  Organization:                             Shared Services|share|us-east-1|prd
+  Account:                                  AutomateTheCloud|atc|480685085376
+  Owner:                                    David Singer|aws-ops@automatethe.cloud
+  DeploymentTimeout:                        35
+
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  #-- Stack Source ----------------------------------------------------------------------
+  StackReferenceSource:                     infrastructure-vpc-share-us-east-1
+
+  #-- Stack Targets ---------------------------------------------------------------------
+  StackReferenceTarget1:                    infrastructure-vpc-demo-us-east-1
+  StackReferenceTarget2:
+  StackReferenceTarget3:
+  StackReferenceTarget4:
+  StackReferenceTarget5:
+  StackReferenceTarget6:
+  StackReferenceTarget7:
+  StackReferenceTarget8:
+  StackReferenceTarget9:
+  StackReferenceTarget10:
+
+##-------------------------------------------------------------------------------------------------
+Paradigm:
+  Templates:
+    - VPC/Peering
+  Parameters:
+  Mappings:
+  Conditions:
+  Resources:
+  Outputs:

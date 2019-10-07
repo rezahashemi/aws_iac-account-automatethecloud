@@ -1,0 +1,24 @@
+Name:                                       account-compliance-us-east-1
+Description:                                Account - Compliance - us-east-1
+Updated:                                    2019/09/26 20:00:00 EST
+
+Details:
+  Project:                                  Account|account
+  Function:                                 Compliance us-east-1|compliance-us-east-1
+  Organization:                             Account|account|us-east-1|global
+  Account:                                  AutomateTheCloud|atc|480685085376
+  Owner:                                    David Singer|aws-ops@automatethe.cloud
+  DeploymentTimeout:                        45
+
+##-------------------------------------------------------------------------------------------------
+Parameters:
+
+##-------------------------------------------------------------------------------------------------
+Paradigm:
+  Templates:
+    - Account/Compliance_Region
+  Parameters:
+  Mappings:
+  Conditions:
+  Resources:
+  Outputs:

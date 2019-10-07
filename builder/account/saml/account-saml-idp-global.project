@@ -1,0 +1,32 @@
+Name:                                       account-saml-idp-global
+Description:                                Account - SAML - global
+Updated:                                    2019/09/28 19:45:00 EST
+
+Details:
+  Project:                                  Account|account
+  Function:                                 SAML IDP|saml-idp
+  Organization:                             Account|account|us-east-1|prd
+  Account:                                  AutomateTheCloud|atc|480685085376
+  Owner:                                    David Singer|aws-ops@automatethe.cloud
+  DeploymentTimeout:                        45
+
+Parameters:
+  #-- IAM -------------------------------------------------------------------------------
+  SAMLProviderName:                         IDP-ATC-GoogleApps
+  SAMLMetadataBucket:                       artifacts-us-east-1-480685085376
+  SAMLMetadataFilename:                     saml/GoogleIDPMetadata-automatethe.cloud.xml
+  SAMLMaxSessionDurationPrivileged:         43200
+  SAMLMaxSessionDurationUser:               43200
+
+  #-- Logs --------------------------------------------------------------------------------
+  LogRetentionDays:                         3653
+
+Paradigm:
+  Templates:
+    - IAM/SAML_IDP
+  Parameters:
+  Mappings:
+  Conditions:
+  Resources:
+    - Project/Custom_SAML_Roles
+  Outputs:

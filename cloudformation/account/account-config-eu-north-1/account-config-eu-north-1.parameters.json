@@ -1,0 +1,11 @@
+[
+  { "ParameterKey": "Account", "ParameterValue": "AutomateTheCloud|atc|480685085376" },
+  { "ParameterKey": "ConfigDeliveryFrequency", "ParameterValue": "TwentyFour_Hours" },
+  { "ParameterKey": "ConfigIncludeGlobalResourceTypes", "ParameterValue": "true" },
+  { "ParameterKey": "Function", "ParameterValue": "Config eu-north-1|config-eu-north-1" },
+  { "ParameterKey": "LastUpdate", "ParameterValue": "2019-10-04 22:18:55.063 UTC" },
+  { "ParameterKey": "Organization", "ParameterValue": "Account|account|eu-north-1|global" },
+  { "ParameterKey": "Owner", "ParameterValue": "David Singer|aws-ops@automatethe.cloud" },
+  { "ParameterKey": "Project", "ParameterValue": "Account|account" },
+  { "ParameterKey": "S3BucketLogsGlobalName", "ParameterValue": "logs-global-480685085376" } 
+]

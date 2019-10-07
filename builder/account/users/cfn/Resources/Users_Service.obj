@@ -1,0 +1,9 @@
+##---------------------------------------------------------------------------------------
+# object:  Project/Users_Service
+##---------------------------------------------------------------------------------------
+UserServiceAzureDevOps:
+  Type: "AWS::IAM::User"
+  Properties:
+    UserName: "service-azuredevops"
+    Groups:
+      - !GetAtt "StackReferenceResultsInitialize.IAMGroupAWSUserAdministratorName"

@@ -1,0 +1,1057 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Account - Initialize - global"
+##-------------------------------------------------------------------------------------------------
+Parameters:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Account
+  ##---------------------------------------------------------------------------------------
+  Account:
+    Description: "Details: Account (AccountName | AccountAbbr | AccountNumber)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Function
+  ##---------------------------------------------------------------------------------------
+  Function:
+    Description: "Details: Function (FunctionName | FunctionAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: Last Update"
+    Type: String
+    Default: 0
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Organization
+  ##---------------------------------------------------------------------------------------
+  Organization:
+    Description: "Details: Organization (OrganizationName | OrganizationAbbr | region | environment)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner (Owner | Contact)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Project
+  ##---------------------------------------------------------------------------------------
+  Project:
+    Description: "Details: Project (ProjectName | ProjectAbbr)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/AllowUsersToChangePassword
+  ##---------------------------------------------------------------------------------------
+  AllowUsersToChangePassword:
+    Description: "You can permit all IAM users in your account to use the IAM console to change their own passwords."
+    Type: String
+    Default: true
+    AllowedValues:
+    - true
+    - false
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/HardExpiry
+  ##---------------------------------------------------------------------------------------
+  HardExpiry:
+    Description: "You can prevent IAM users from choosing a new password after their current password has expired."
+    Type: String
+    Default: false
+    AllowedValues:
+    - true
+    - false
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/MaxPasswordAge
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.11: Ensure IAM password policy expires passwords within 90 days or less
+  ##---------------------------------------------------------------------------------------
+  MaxPasswordAge:
+    Description: "You can set IAM user passwords to be valid for only the specified number of days."
+    Type: Number
+    Default: 90
+    MinValue: 0
+    MaxValue: 1095
+    ConstraintDescription: "Must be in the range [0-1095]"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/MinimumPasswordLength
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.9: Ensure IAM password policy requires minimum length of 14 or greater
+  ##---------------------------------------------------------------------------------------
+  MinimumPasswordLength:
+    Description: "You can specify the minimum number of characters allowed in an IAM user password."
+    Type: Number
+    Default: 12
+    MinValue: 6
+    MaxValue: 128
+    ConstraintDescription: "Must be in the range [6-128]"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/PasswordReusePrevention
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.10: Ensure IAM password policy prevents password reuse
+  ##---------------------------------------------------------------------------------------
+  PasswordReusePrevention:
+    Description: "You can prevent IAM users from reusing a specified number of previous passwords."
+    Type: Number
+    Default: 6
+    MinValue: 1
+    MaxValue: 24
+    ConstraintDescription: "Must be in the range [1-24]"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/RequireLowercaseCharacters
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.6: Ensure IAM password policy require at least one lowercase letter
+  ##---------------------------------------------------------------------------------------
+  RequireLowercaseCharacters:
+    Description: "You can require that IAM user passwords contain at least one lowercase character from the ISO basic Latin alphabet (a to z)."
+    Type: String
+    Default: true
+    AllowedValues:
+    - true
+    - false
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/RequireNumbers
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.8: Ensure IAM password policy require at least one number
+  ##---------------------------------------------------------------------------------------
+  RequireNumbers:
+    Description: "You can require that IAM user passwords contain at least one numeric character (0 to 9)."
+    Type: String
+    Default: true
+    AllowedValues:
+    - true
+    - false
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/RequireSymbols
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.7: Ensure IAM password policy require at least one symbol
+  ##---------------------------------------------------------------------------------------
+  RequireSymbols:
+    Description: "You can require that IAM user passwords contain at least one of the following nonalphanumeric characters: ! @ # $ % ^ & * ( ) _ + - = [ ] {} | '"
+    Type: String
+    Default: true
+    AllowedValues:
+    - true
+    - false
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/RequireUppercaseCharacters
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.5: Ensure IAM password policy requires at least one uppercase letter
+  ##---------------------------------------------------------------------------------------
+  RequireUppercaseCharacters:
+    Description: "You can require that IAM user passwords contain at least one uppercase character from the ISO basic Latin alphabet (A to Z)."
+    Type: String
+    Default: true
+    AllowedValues:
+    - true
+    - false
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogRetentionCloudTrail
+  ##---------------------------------------------------------------------------------------
+  LogRetentionCloudTrail:
+    Description: "Log Retention (days): CloudTrail"
+    Type: Number
+    Default: 14
+    AllowedValues:
+      - 1
+      - 3
+      - 5
+      - 7
+      - 14
+      - 30
+      - 60
+      - 90
+      - 120
+      - 150
+      - 180
+      - 365
+      - 400
+      - 545
+      - 731
+      - 1827
+      - 3653
+    ConstraintDescription: "Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653"
+
+  ##-----------------------------------------------------------------------------------------
+  # object: S3/S3BucketAuditName
+  ##-----------------------------------------------------------------------------------------
+  S3BucketAuditName:
+    Description: "S3: Bucket Name (Audit)"
+    Type: String
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/S3BucketLogsGlobalName
+  ##---------------------------------------------------------------------------------------
+  S3BucketLogsGlobalName:
+    Description: "S3: Bucket Name (Logs - Global)"
+    Type: String
+
+##-------------------------------------------------------------------------------------------------
+Resources:
+  ##---------------------------------------------------------------------------------------
+  # object: CloudTrail/Trail/Audit
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 2.1: Ensure CloudTrail is enabled in all regions
+  #     - 2.2: Ensure CloudTrail log file validation is enabled
+  #     - 2.4: Ensure CloudTrail trails are integrated with CloudWatch Logs
+  #     - 2.7: Ensure CloudTrail logs are encrypted at rest using KMS CMKs
+  ##---------------------------------------------------------------------------------------
+  CloudTrailAudit:
+    Type: "AWS::CloudTrail::Trail"
+    Properties:
+      TrailName: "cloudtrail-audit"
+      EnableLogFileValidation: true
+      IncludeGlobalServiceEvents: true
+      IsLogging: true
+      IsMultiRegionTrail: true
+      KMSKeyId: !GetAtt "KMSKeyAudit.Arn"
+      S3BucketName: !Ref "S3BucketAudit"
+      CloudWatchLogsLogGroupArn: !GetAtt "LogGroupCloudTrailAudit.Arn"
+      CloudWatchLogsRoleArn: !GetAtt "IAMRoleLogGroupCloudTrailAudit.Arn"
+      Tags:
+        - Key: "Name"
+          Value: "cloudtrail-audit"
+    DependsOn:
+      - "S3BucketPolicyAudit"
+      - "S3BucketAudit"
+      - "LogGroupCloudTrailAudit"
+      - "IAMRoleLogGroupCloudTrailAudit"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Custom/IAMPasswordPolicy
+  ##---------------------------------------------------------------------------------------
+  IAMPasswordPolicy:
+    Type: "Custom::IAMPasswordPolicy"
+    Version: "1.0"
+    Properties:
+      "ServiceToken": !GetAtt "LambdaFunctionIAMPasswordPolicy.Arn"
+    DependsOn: "LogGroupLambdaFunctionIAMPasswordPolicy"
+
+  ##---------------------------------------------------------------------------------------
+  # object: DynamoDB/Table/AccountManifestCloudFormation
+  ##---------------------------------------------------------------------------------------
+  DynamoDBTableAccountManifestCloudFormation:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: "account-manifest-cloudformation"
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        - AttributeName: "StackId"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "StackId"
+          KeyType: "HASH"
+
+  ##---------------------------------------------------------------------------------------
+  # object: DynamoDB/Table/AccountManifestSecrets
+  ##---------------------------------------------------------------------------------------
+  DynamoDBTableAccountManifestSecrets:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: "account-manifest-secrets"
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        - AttributeName: "StackId"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "StackId"
+          KeyType: "HASH"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/AWSUserAdministrator
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserAdministrator:
+    Type: "AWS::IAM::Group"
+    Properties:
+      GroupName: "AWS-User_Administrator"
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/AWSUserBilling
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserBilling:
+    Type: "AWS::IAM::Group"
+    Properties:
+      GroupName: "AWS-User_Billing"
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/job-function/Billing
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/AWSUserHuman
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserHuman:
+    Type: "AWS::IAM::Group"
+    Properties:
+      GroupName: "AWS-User_Human"
+      Path: "/"
+      Policies:
+      - PolicyName: "policy_aws-user_human"
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Sid: "AllowUserstoListAWSs"
+              Effect: "Allow"
+              Action:
+                - "iam:ListAWSAliases"
+                - "iam:ListUsers"
+                - "iam:GetAWSPasswordPolicy"
+                - "iam:GetAWSSummary"
+              Resource:
+                - "*"
+            -
+              Sid: "AllowUserstoManageOwnAWS"
+              Effect: "Allow"
+              Action:
+                - "iam:ChangePassword"
+                - "iam:CreateAccessKey"
+                - "iam:CreateLoginProfile"
+                - "iam:DeleteAccessKey"
+                - "iam:DeleteLoginProfile"
+                - "iam:GetLoginProfile"
+                - "iam:ListAccessKeys"
+                - "iam:UpdateAccessKey"
+                - "iam:UpdateLoginProfile"
+                - "iam:ListSigningCertificates"
+                - "iam:DeleteSigningCertificate"
+                - "iam:UpdateSigningCertificate"
+                - "iam:UploadSigningCertificate"
+                - "iam:ListSSHPublicKeys"
+                - "iam:GetSSHPublicKey"
+                - "iam:DeleteSSHPublicKey"
+                - "iam:UpdateSSHPublicKey"
+                - "iam:UploadSSHPublicKey"
+              Resource:
+                - "arn:aws:iam::*:user/${aws:username}"
+            -
+              Sid: "AllowUserstoListOnlyThierMFA"
+              Effect: "Allow"
+              Action:
+                - "iam:ListVirtualMFADevices"
+                - "iam:ListMFADevices"
+              Resource:
+                - "arn:aws:iam::*:mfa/*"
+                - "arn:aws:iam::*:user/${aws:username}"
+            -
+              Sid: "AllowUsertoManageThierMFA"
+              Effect: "Allow"
+              Action:
+                - "iam:CreateVirtualMFADevice"
+                - "iam:DeleteVirtualMFADevice"
+                - "iam:EnableMFADevice"
+                - "iam:ResyncMFADevice"
+              Resource:
+                - "arn:aws:iam::*:mfa/${aws:username}"
+                - "arn:aws:iam::*:user/${aws:username}"
+            -
+              Sid: "AllowUserstoDeactiveTheirMFAWhenUseingMFA"
+              Effect: "Allow"
+              Action:
+                - "iam:DeactivateMFADevice"
+              Resource:
+                - "arn:aws:iam::*:mfa/${aws:username}"
+                - "arn:aws:iam::*:user/${aws:username}"
+              Condition:
+                Bool:
+                  "aws:MultiFactorAuthPresent": "true"
+            -
+              Sid: "BlockMostAccessUnlessSignedinwithMFA"
+              Effect: "Deny"
+              NotAction:
+                - "iam:ChangePassword"
+                - "iam:CreateVirtualMFADevice"
+                - "iam:DeleteVirtualMFADevice"
+                - "iam:ListVirtualMFADevices"
+                - "iam:EnableMFADevice"
+                - "iam:ResyncMFADevice"
+                - "iam:ListAWSAliases"
+                - "iam:ListUsers"
+                - "iam:ListSSHPublicKeys"
+                - "iam:ListAccessKeys"
+                - "iam:ListServiceSpecificCredentials"
+                - "iam:ListMFADevices"
+                - "iam:GetAWSSummary"
+                - "sts:GetSessionToken"
+              Resource:
+                - "arn:aws:iam::*:mfa/${aws:username}"
+                - "arn:aws:iam::*:user/${aws:username}"
+              Condition:
+                BoolIfExists:
+                  "aws:MultiFactorAuthPresent": "false"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/AWSUserPowerUser
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserPowerUser:
+    Type: "AWS::IAM::Group"
+    Properties:
+      GroupName: "AWS-User_PowerUser"
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/PowerUserAccess
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/AWSUserReadOnly
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserReadOnly:
+    Type: "AWS::IAM::Group"
+    Properties:
+      GroupName: "AWS-User_ReadOnly"
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/AWSUserSupport
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserSupport:
+    Type: "AWS::IAM::Group"
+    Properties:
+      GroupName: "AWS-User_Support"
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSSupportAccess
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/LambdaFunctionIAMPasswordPolicy
+  ##---------------------------------------------------------------------------------------
+  IAMRoleLambdaFunctionIAMPasswordPolicy:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join [ "_", [ "lambda", "iam-password-policy", !Ref "AWS::Region" ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action:
+            - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+        - PolicyName: iam
+          PolicyDocument:
+            Statement:
+              - Effect: "Allow"
+                Action:
+                - "logs:*"
+                Resource: !Join [ "", [ "arn:aws:logs:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":log-group:/aws/lambda/", "iam-password-policy", ":*" ] ]
+              - Effect: Allow
+                Action:
+                - "iam:UpdateAccountPasswordPolicy"
+                - "iam:DeleteAccountPasswordPolicy"
+                Resource: "*"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Role/LogGroupCloudTrailAudit
+  ##---------------------------------------------------------------------------------------
+  IAMRoleLogGroupCloudTrailAudit:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "loggroup_cloudtrail-audit"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "cloudtrail.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: 'cloudtrail'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                - "logs:CreateLogStream"
+                - "logs:PutLogEvents"
+                Resource: !GetAtt "LogGroupCloudTrailAudit.Arn"
+
+  ##---------------------------------------------------------------------------------------
+  # object: KMS/Alias/AuditGlobal
+  ##---------------------------------------------------------------------------------------
+  KMSAliasAudit:
+    Type: "AWS::KMS::Alias"
+    Properties:
+      AliasName: "alias/audit-global"
+      TargetKeyId: !Ref "KMSKeyAudit"
+
+  ##---------------------------------------------------------------------------------------
+  # object: KMS/Key/AuditGlobal
+  ##---------------------------------------------------------------------------------------
+  KMSKeyAudit:
+    Type: "AWS::KMS::Key"
+    Properties:
+      Enabled: true
+      EnableKeyRotation: true
+      Description: !Join [ "", [ "Audit Encryption Key for ", !Select [0, !Split ["|", !Ref "Organization"]], "(global)" ] ]
+      KeyPolicy:
+        Version: "2012-10-17"
+        Id: "keypolicy_audit"
+        Statement:
+          - Sid: "Enable Root KMS Permissions"
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Join [ "", [ "arn:aws:iam::", !Ref "AWS::AccountId", ":root" ] ]
+            Action: "kms:*"
+            Resource: "*"
+          - Sid: "Enable AWS Services KMS Permissions"
+            Effect: Allow
+            Principal:
+              Service:
+                - "cloudtrail.amazonaws.com"
+                - "config.amazonaws.com"
+                - "ses.amazonaws.com"
+                - "sns.amazonaws.com"
+            Action:
+              - "kms:Encrypt"
+              - "kms:Decrypt"
+              - "kms:ReEncrypt"
+              - "kms:GenerateDataKey*"
+              - "kms:DescribeKey"
+            Resource: "*"
+          - Sid: "Enable S3 KMS Permissions"
+            Effect: Allow
+            Principal:
+              AWS: '*'
+            Action:
+            - 'kms:Encrypt'
+            - 'kms:Decrypt'
+            - 'kms:ReEncrypt*'
+            - 'kms:GenerateDataKey*'
+            - 'kms:DescribeKey'
+            Resource: '*'
+            Condition:
+              StringEquals:
+                'kms:CallerAccount': !Ref 'AWS::AccountId'
+                'kms:ViaService': !Sub 's3.${AWS::Region}.amazonaws.com'
+      Tags:
+        - Key: "Organization"
+          Value: !Select [0, !Split ["|", !Ref "Organization"]]
+        - Key: "Project"
+          Value: !Select [0, !Split ["|", !Ref "Project"]]
+        - Key: "Function"
+          Value: "Audit Encryption Key"
+        - Key: "Owner"
+          Value: !Select [0, !Split ["|", !Ref "Owner"]]
+        - Key: "Contact"
+          Value: !Select [1, !Split ["|", !Ref "Owner"]]
+
+  ##---------------------------------------------------------------------------------------
+  # object: Lambda/Function/IAMPasswordPolicy
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 1.5: Ensure IAM password policy requires at least one uppercase letter
+  #     - 1.6: Ensure IAM password policy require at least one lowercase letter
+  #     - 1.7: Ensure IAM password policy require at least one symbol
+  #     - 1.8: Ensure IAM password policy require at least one number
+  #     - 1.9: Ensure IAM password policy requires minimum length of 14 or greater
+  #     - 1.10: Ensure IAM password policy prevents password reuse
+  #     - 1.11: Ensure IAM password policy expires passwords within 90 days or less
+  ##---------------------------------------------------------------------------------------
+  LambdaFunctionIAMPasswordPolicy:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "iam-password-policy"
+      Description: "IAM Password Policy"
+      Code:
+        ZipFile:
+          !Sub |
+            'use strict';
+            const response = require('cfn-response');
+            const AWS = require('aws-sdk');
+            const iam = new AWS.IAM({apiVersion: '2010-05-08'});
+            exports.handler = (event, context, cb) => {
+              console.log(`Invoke: ${!JSON.stringify(event)}`);
+              const done = (err) => {
+                if (err) {
+                  console.log(`Error: ${!JSON.stringify(err)}`);
+                  response.send(event, context, response.FAILED, {});
+                } else {
+                  response.send(event, context, response.SUCCESS, {});
+                }
+              };
+              if (event.RequestType === 'Delete') {
+                iam.deleteAccountPasswordPolicy({}, done);
+              } else if (event.RequestType === 'Create' || event.RequestType === 'Update') {
+                iam.updateAccountPasswordPolicy({
+                  AllowUsersToChangePassword: ${AllowUsersToChangePassword},
+                  HardExpiry: ${HardExpiry},
+                  MaxPasswordAge: ${MaxPasswordAge},
+                  MinimumPasswordLength: ${MinimumPasswordLength},
+                  PasswordReusePrevention: ${PasswordReusePrevention},
+                  RequireLowercaseCharacters: ${RequireLowercaseCharacters},
+                  RequireNumbers: ${RequireNumbers},
+                  RequireSymbols: ${RequireSymbols},
+                  RequireUppercaseCharacters: ${RequireUppercaseCharacters},
+                }, done);
+              } else {
+                cb(new Error(`unsupported RequestType: ${!event.RequestType}`));
+              }
+            };
+      Handler: "index.handler"
+      MemorySize: 128
+      Role: !GetAtt "IAMRoleLambdaFunctionIAMPasswordPolicy.Arn"
+      Runtime: "nodejs8.10"
+      Timeout: 60
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/CloudTrailAudit
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 2.4: Ensure CloudTrail trails are integrated with CloudWatch Logs
+  ##---------------------------------------------------------------------------------------
+  LogGroupCloudTrailAudit:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: "/aws/cloudtrail/audit"
+      RetentionInDays: !Ref "LogRetentionCloudTrail"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroup/LambdaFunctionIAMPasswordPolicy
+  ##---------------------------------------------------------------------------------------
+  LogGroupLambdaFunctionIAMPasswordPolicy:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionIAMPasswordPolicy}"
+      RetentionInDays: "3653"
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/Bucket/Audit
+  # notes:
+  #   - CIS Amazon Web Services Foundations
+  #     - 2.3: Ensure the S3 bucket used to store CloudTrail logs is not publicly accessible
+  #     - 2.6: Ensure S3 bucket access logging is enabled on the CloudTrail S3 bucket
+  ##---------------------------------------------------------------------------------------
+  S3BucketAudit:
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: "Retain"
+    Properties:
+      BucketName: !Ref "S3BucketAuditName"
+      BucketEncryption:
+          ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: "aws:kms"
+              KMSMasterKeyID: !GetAtt "KMSKeyAudit.Arn"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      AccessControl: "LogDeliveryWrite"
+      LoggingConfiguration:
+        DestinationBucketName: !Join [ "", [ !Ref "S3BucketLogs" ] ]
+        LogFilePrefix: !Join [ "", [ "s3/", !Ref "S3BucketAuditName", "/" ] ]
+      Tags:
+        - Key: "Name"
+          Value: !Ref "S3BucketAuditName"
+    DependsOn:
+      - "KMSKeyAudit"
+      - "S3BucketLogs"
+      - "S3BucketPolicyLogs"
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/Bucket/LogsGlobal
+  ##---------------------------------------------------------------------------------------
+  S3BucketLogs:
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: "Retain"
+    Properties:
+      BucketName: !Ref "S3BucketLogsGlobalName"
+      BucketEncryption:
+          ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      AccessControl: "LogDeliveryWrite"
+      Tags:
+        - Key: "Name"
+          Value: !Ref "S3BucketLogsGlobalName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/BucketPolicy/Audit
+  ##---------------------------------------------------------------------------------------
+  S3BucketPolicyAudit:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Ref "S3BucketAudit"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Sid: "AWS_CloudTrail_AclCheck"
+            Effect: "Allow"
+            Principal:
+              Service: "cloudtrail.amazonaws.com"
+            Action: "s3:GetBucketAcl"
+            Resource:
+              - !Join [ "", [ "arn:aws:s3:::", !Ref "S3BucketAuditName" ] ]
+          -
+            Sid: "AWS_CloudTrail_Write"
+            Effect: "Allow"
+            Principal:
+              Service: "cloudtrail.amazonaws.com"
+            Action: "s3:PutObject"
+            Resource:
+              - !Join [ "", [ "arn:aws:s3:::", !Ref "S3BucketAuditName", "/AWSLogs/", !Ref "AWS::AccountId", "/*" ] ]
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: "bucket-owner-full-control"
+          -
+            Sid: "AWSConfigBucketPermissionsCheck"
+            Effect: "Allow"
+            Principal:
+              Service: "config.amazonaws.com"
+            Action: "s3:GetBucketAcl"
+            Resource:
+              - !Join [ "", [ "arn:aws:s3:::", !Ref "S3BucketAuditName" ] ]
+          -
+            Sid: "AWSConfigBucketExistenceCheck"
+            Effect: "Allow"
+            Principal:
+              Service: "config.amazonaws.com"
+            Action: "s3:ListBucket"
+            Resource:
+              - !Join [ "", [ "arn:aws:s3:::", !Ref "S3BucketAuditName" ] ]
+          -
+            Sid: "AWSConfigBucketDelivery"
+            Effect: "Allow"
+            Principal:
+              Service: "config.amazonaws.com"
+            Action: "s3:PutObject"
+            Resource:
+              - !Join [ "", [ "arn:aws:s3:::", !Ref "S3BucketAuditName", "/AWSLogs/", !Ref "AWS::AccountId", "/Config/*" ] ]
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: "bucket-owner-full-control"
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/BucketPolicy/LogsGlobal
+  ##---------------------------------------------------------------------------------------
+  S3BucketPolicyLogs:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Ref "S3BucketLogs"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Sid: "AWSConfigBucketPermissionsCheck"
+            Effect: "Allow"
+            Principal:
+              Service: "config.amazonaws.com"
+            Action: "s3:GetBucketAcl"
+            Resource:
+              - !Join [ "", [ "arn:aws:s3:::", !Ref "S3BucketLogsGlobalName" ] ]
+          -
+            Sid: "AWSConfigBucketExistenceCheck"
+            Effect: "Allow"
+            Principal:
+              Service: "config.amazonaws.com"
+            Action: "s3:ListBucket"
+            Resource:
+              - !Join [ "", [ "arn:aws:s3:::", !Ref "S3BucketLogsGlobalName" ] ]
+          -
+            Sid: "AWSConfigBucketDelivery"
+            Effect: "Allow"
+            Principal:
+              Service: "config.amazonaws.com"
+            Action: "s3:PutObject"
+            Resource:
+              - !Join [ "", [ "arn:aws:s3:::", !Ref "S3BucketLogsGlobalName", "/AWSLogs/", !Ref "AWS::AccountId", "/Config/*" ] ]
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: "bucket-owner-full-control"
+
+##-------------------------------------------------------------------------------------------------
+Outputs:
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Contact
+  ##---------------------------------------------------------------------------------------
+  Contact:
+    Description: "Details: Contact"
+    Value: !Select [1, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Contact"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Environment
+  ##---------------------------------------------------------------------------------------
+  Environment:
+    Description: "Details: Environment"
+    Value: !Select [3, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Environment"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionAbbr
+  ##---------------------------------------------------------------------------------------
+  FunctionAbbr:
+    Description: "Details: FunctionAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/FunctionName
+  ##---------------------------------------------------------------------------------------
+  FunctionName:
+    Description: "Details: FunctionName"
+    Value: !Select [0, !Split ["|", !Ref "Function"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/LastUpdate
+  ##---------------------------------------------------------------------------------------
+  LastUpdate:
+    Description: "Details: LastUpdate"
+    Value: !Ref "LastUpdate"
+    Export:
+      Name: !Sub "${AWS::StackName}-LastUpdate"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationAbbr
+  ##---------------------------------------------------------------------------------------
+  OrganizationAbbr:
+    Description: "Details: OrganizationAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/OrganizationName
+  ##---------------------------------------------------------------------------------------
+  OrganizationName:
+    Description: "Details: OrganizationName"
+    Value: !Select [0, !Split ["|", !Ref "Organization"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-OrganizationName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/Owner
+  ##---------------------------------------------------------------------------------------
+  Owner:
+    Description: "Details: Owner"
+    Value: !Select [0, !Split ["|", !Ref "Owner"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-Owner"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectAbbr
+  ##---------------------------------------------------------------------------------------
+  ProjectAbbr:
+    Description: "Details: ProjectAbbr"
+    Value: !Select [1, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectAbbr"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Details/ProjectName
+  ##---------------------------------------------------------------------------------------
+  ProjectName:
+    Description: "Details: ProjectName"
+    Value: !Select [0, !Split ["|", !Ref "Project"]]
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/IAMGroupAWSUserAdministratorArn
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserAdministratorArn:
+    Description: "IAM Group (AWSUserAdministrator): ARN"
+    Value: !GetAtt "IAMGroupAWSUserAdministrator.Arn"
+    Export:
+      Name: !Sub "${AWS::StackName}-IAMGroupAWSUserAdministratorArn"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/IAMGroupAWSUserAdministratorName
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserAdministratorName:
+    Description: "IAM Group (AWSUserAdministrator): Name"
+    Value: !Ref "IAMGroupAWSUserAdministrator"
+    Export:
+      Name: !Sub "${AWS::StackName}-IAMGroupAWSUserAdministratorName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/IAMGroupAWSUserBillingArn
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserBillingArn:
+    Description: "IAM Group (AWSUserBilling): ARN"
+    Value: !GetAtt "IAMGroupAWSUserBilling.Arn"
+    Export:
+      Name: !Sub "${AWS::StackName}-IAMGroupAWSUserBillingArn"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/IAMGroupAWSUserBillingName
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserBillingName:
+    Description: "IAM Group (AWSUserBilling): Name"
+    Value: !Ref "IAMGroupAWSUserBilling"
+    Export:
+      Name: !Sub "${AWS::StackName}-IAMGroupAWSUserBillingName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/IAMGroupAWSUserHumanArn
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserHumanArn:
+    Description: "IAM Group (AWSUserHuman): ARN"
+    Value: !GetAtt "IAMGroupAWSUserHuman.Arn"
+    Export:
+      Name: !Sub "${AWS::StackName}-IAMGroupAWSUserHumanArn"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/IAMGroupAWSUserHumanName
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserHumanName:
+    Description: "IAM Group (AWSUserHuman): Name"
+    Value: !Ref "IAMGroupAWSUserHuman"
+    Export:
+      Name: !Sub "${AWS::StackName}-IAMGroupAWSUserHumanName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/IAMGroupAWSUserPowerUserArn
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserPowerUserArn:
+    Description: "IAM Group (AWSUserPowerUser): ARN"
+    Value: !GetAtt "IAMGroupAWSUserPowerUser.Arn"
+    Export:
+      Name: !Sub "${AWS::StackName}-IAMGroupAWSUserPowerUserArn"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/IAMGroupAWSUserPowerUserName
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserPowerUserName:
+    Description: "IAM Group (AWSUserPowerUser): Name"
+    Value: !Ref "IAMGroupAWSUserPowerUser"
+    Export:
+      Name: !Sub "${AWS::StackName}-IAMGroupAWSUserPowerUserName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/IAMGroupAWSUserReadOnlyArn
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserReadOnlyArn:
+    Description: "IAM Group (AWSUserReadOnly): ARN"
+    Value: !GetAtt "IAMGroupAWSUserReadOnly.Arn"
+    Export:
+      Name: !Sub "${AWS::StackName}-IAMGroupAWSUserReadOnlyArn"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/IAMGroupAWSUserReadOnlyName
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserReadOnlyName:
+    Description: "IAM Group (AWSUserReadOnly): Name"
+    Value: !Ref "IAMGroupAWSUserReadOnly"
+    Export:
+      Name: !Sub "${AWS::StackName}-IAMGroupAWSUserReadOnlyName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/IAMGroupAWSUserSupportArn
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserSupportArn:
+    Description: "IAM Group (AWSUserSupport): ARN"
+    Value: !GetAtt "IAMGroupAWSUserSupport.Arn"
+    Export:
+      Name: !Sub "${AWS::StackName}-IAMGroupAWSUserSupportArn"
+
+  ##---------------------------------------------------------------------------------------
+  # object: IAM/Group/IAMGroupAWSUserSupportName
+  ##---------------------------------------------------------------------------------------
+  IAMGroupAWSUserSupportName:
+    Description: "IAM Group (AWSUserSupport): Name"
+    Value: !Ref "IAMGroupAWSUserSupport"
+    Export:
+      Name: !Sub "${AWS::StackName}-IAMGroupAWSUserSupportName"
+
+  ##---------------------------------------------------------------------------------------
+  # object: KMS/KMSKeyAliasAudit
+  ##---------------------------------------------------------------------------------------
+  KMSKeyAliasAudit:
+    Description: "KMS Key: Audit"
+    Value: !Join [ "", [ "arn:aws:kms:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":", !Ref "KMSAliasAudit" ] ]
+    Export:
+      Name: !Sub "${AWS::StackName}-KMSKeyAliasAudit"
+
+  ##---------------------------------------------------------------------------------------
+  # object: KMS/KMSKeyAudit
+  ##---------------------------------------------------------------------------------------
+  KMSKeyAudit:
+    Description: "KMS Key: Audit"
+    Value: !GetAtt "KMSKeyAudit.Arn"
+    Export:
+      Name: !Sub "${AWS::StackName}-KMSKeyAudit"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroupCloudTrailAuditArn
+  ##---------------------------------------------------------------------------------------
+  LogGroupCloudTrailAuditArn:
+    Description: "Log Group: CloudTrailAudit (ARN)"
+    Value: !GetAtt "LogGroupCloudTrailAudit.Arn"
+    Export:
+      Name: !Sub "${AWS::StackName}-LogGroupCloudTrailAuditArn"
+
+  ##---------------------------------------------------------------------------------------
+  # object: Logs/LogGroupCloudTrailAuditId
+  ##---------------------------------------------------------------------------------------
+  LogGroupCloudTrailAuditId:
+    Description: "Log Group: CloudTrailAudit (ID)"
+    Value: !Ref "LogGroupCloudTrailAudit"
+    Export:
+      Name: !Sub "${AWS::StackName}-LogGroupCloudTrailAuditId"
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/S3BucketAudit
+  ##---------------------------------------------------------------------------------------
+  S3BucketAudit:
+    Description: "S3 Bucket: Audit"
+    Value: !Ref "S3BucketAudit"
+    Export:
+      Name: !Sub "${AWS::StackName}-S3BucketAudit"
+
+  ##---------------------------------------------------------------------------------------
+  # object: S3/S3BucketLogs
+  ##---------------------------------------------------------------------------------------
+  S3BucketLogs:
+    Description: "S3 Bucket: Logs"
+    Value: !Ref "S3BucketLogs"
+    Export:
+      Name: !Sub "${AWS::StackName}-S3BucketLogs"
+
