@@ -1600,18 +1600,18 @@ Outputs:
   ##---------------------------------------------------------------------------------------
   # object: SNS/Topic/AuditArn
   ##---------------------------------------------------------------------------------------
-  SNSTopicAuditArn:
+  SNSTopicArn:
     Description: "SNS Topic (Audit): ARN"
     Value: !Ref "SNSTopicAudit"
     Export:
-      Name: !Sub "${AWS::StackName}-SNSTopicAuditArn"
+      Name: !Sub "${AWS::StackName}-SNSTopicArn"
 
   ##---------------------------------------------------------------------------------------
   # object: SNS/Topic/AuditTopicName
   ##---------------------------------------------------------------------------------------
-  SNSTopicAuditTopicName:
+  SNSTopicName:
     Description: "SNS Topic (Audit): Topic Name"
     Value: !GetAtt "SNSTopicAudit.TopicName"
     Export:
-      Name: !Sub "${AWS::StackName}-SNSTopicAuditTopicName"
+      Name: !Sub "${AWS::StackName}-SNSTopicName"
 

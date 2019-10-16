@@ -1,7 +1,7 @@
 [
   { "ParameterKey": "Account", "ParameterValue": "AutomateTheCloud|atc|480685085376" },
   { "ParameterKey": "Function", "ParameterValue": "Compliance Global|compliance-global" },
-  { "ParameterKey": "LastUpdate", "ParameterValue": "2019-09-27 02:02:24.071 UTC" },
+  { "ParameterKey": "LastUpdate", "ParameterValue": "2019-10-16 13:31:20.175 UTC" },
   { "ParameterKey": "Organization", "ParameterValue": "Account|account|us-east-1|global" },
   { "ParameterKey": "Owner", "ParameterValue": "David Singer|aws-ops@automatethe.cloud" },
   { "ParameterKey": "Project", "ParameterValue": "Account|account" },
