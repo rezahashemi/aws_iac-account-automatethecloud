@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Infrastructure - VPC: Demo - us-east-1"
+Description: "Infrastructure - VPC: Production - us-east-1"
 ##-------------------------------------------------------------------------------------------------
 Parameters:
   ##---------------------------------------------------------------------------------------
@@ -1191,7 +1191,7 @@ Outputs:
       Name: !Sub "${AWS::StackName}-SubnetRestricted3Id"
 
   ##---------------------------------------------------------------------------------------
-  # object: S3/S3BucketArtifacts_VPC
+  # object: S3/S3BucketArtifacts_Initialize
   ##---------------------------------------------------------------------------------------
   S3BucketArtifacts:
     Description: "S3 Bucket: Artifacts"
@@ -1200,7 +1200,7 @@ Outputs:
       Name: !Sub "${AWS::StackName}-S3BucketArtifacts"
 
   ##---------------------------------------------------------------------------------------
-  # object: S3/S3BucketLogs_VPC
+  # object: S3/S3BucketLogs_Initialize
   ##---------------------------------------------------------------------------------------
   S3BucketLogs:
     Description: "S3 Bucket: Logs"

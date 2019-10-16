@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Infrastructure - VPC: Shared Services - us-east-1"
+Description: "Infrastructure - VPC: Development - us-east-1"
 ##-------------------------------------------------------------------------------------------------
 Parameters:
   ##---------------------------------------------------------------------------------------

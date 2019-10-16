@@ -1,11 +1,11 @@
-Name:                                       infrastructure-vpc-demo-us-east-1
-Description:                                Infrastructure - VPC: Demo - us-east-1
-Updated:                                    2019/09/27 00:00:00 EST
+Name:                                       infrastructure-vpc-devel-us-east-1
+Description:                                Infrastructure - VPC: Development - us-east-1
+Updated:                                    2019/10/16 13:15:00 EST
 
 Details:
   Project:                                  Infrastructure|infrastructure
   Function:                                 VPC|vpc
-  Organization:                             Demo|demo|us-east-1|prd
+  Organization:                             Development|devel|us-east-1|dev
   Account:                                  AutomateTheCloud|atc|480685085376
   Owner:                                    David Singer|aws-ops@automatethe.cloud
   DeploymentTimeout:                        35
@@ -27,8 +27,8 @@ Parameters:
   FlowLogTrafficType:                       REJECT
 
   #-- Instance --------------------------------------------------------------------------
-  KeypairDefault:                           ec2-user_demo_us-east-1_2019-09-24_de71
-  TimezoneLinux:                            America/Kentucky/Louisville
+  KeypairDefault:                           ec2-user_devel_us-east-1_2019-10-16_37c5
+  TimezoneLinux:                            America/New_York
   TimezoneWindows:                          Eastern Standard Time
 
 ##-------------------------------------------------------------------------------------------------

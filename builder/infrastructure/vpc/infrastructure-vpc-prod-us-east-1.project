@@ -1,11 +1,11 @@
-Name:                                       infrastructure-vpc-share-us-east-1
-Description:                                Infrastructure - VPC: Shared Services - us-east-1
+Name:                                       infrastructure-vpc-prod-us-east-1
+Description:                                Infrastructure - VPC: Production - us-east-1
 Updated:                                    2019/10/16 13:15:00 EST
 
 Details:
   Project:                                  Infrastructure|infrastructure
   Function:                                 VPC|vpc
-  Organization:                             Shared Services|share|us-east-1|prd
+  Organization:                             Production|prod|us-east-1|prd
   Account:                                  AutomateTheCloud|atc|480685085376
   Owner:                                    David Singer|aws-ops@automatethe.cloud
   DeploymentTimeout:                        35
@@ -16,7 +16,7 @@ Parameters:
   StackReferenceInitialize:                 account-initialize-us-east-1
 
   #-- Network ---------------------------------------------------------------------------
-  IpNetwork:                                172.24.0.0
+  IpNetwork:                                172.24.192.0
   IpNetmask:                                19
   AvailabilityZone1:                        us-east-1a
   AvailabilityZone2:                        us-east-1c
@@ -27,7 +27,7 @@ Parameters:
   FlowLogTrafficType:                       REJECT
 
   #-- Instance --------------------------------------------------------------------------
-  KeypairDefault:                           ec2-user_share_us-east-1_2019-10-16_f9b5
+  KeypairDefault:                           ec2-user_prod_us-east-1_2019-10-16_3773
   TimezoneLinux:                            America/New_York
   TimezoneWindows:                          Eastern Standard Time
 
