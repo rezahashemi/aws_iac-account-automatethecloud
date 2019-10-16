@@ -1,5 +1,5 @@
 [stack_name]=account-saml-idp-global
-[stack_description]=Account - SAML - global
+[stack_description]=Account - SAML IDP - global
 [deployment_timeout]=45
 [account_name]=AutomateTheCloud
 [account_abbr]=atc
