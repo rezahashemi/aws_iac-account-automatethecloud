@@ -1,6 +1,6 @@
 Name:                                       infrastructure-vpcpeering-share-us-east-1
 Description:                                Infrastructure - VPC Peering: Shared Services - us-east-1
-Updated:                                    2019/09/27 00:45:00 EST
+Updated:                                    2019/10/16 13:30:00 EST
 
 Details:
   Project:                                  Infrastructure|infrastructure
@@ -16,8 +16,8 @@ Parameters:
   StackReferenceSource:                     infrastructure-vpc-share-us-east-1
 
   #-- Stack Targets ---------------------------------------------------------------------
-  StackReferenceTarget1:                    infrastructure-vpc-demo-us-east-1
-  StackReferenceTarget2:
+  StackReferenceTarget1:                    infrastructure-vpc-devel-us-east-1
+  StackReferenceTarget2:                    infrastructure-vpc-prod-us-east-1
   StackReferenceTarget3:
   StackReferenceTarget4:
   StackReferenceTarget5:
