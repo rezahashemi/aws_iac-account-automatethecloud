@@ -3,7 +3,7 @@
   { "ParameterKey": "EnableGuardDuty", "ParameterValue": "false" },
   { "ParameterKey": "Function", "ParameterValue": "Initialize us-east-1|initialize-us-east-1" },
   { "ParameterKey": "GuardDutyFindingPublishingFrequency", "ParameterValue": "SIX_HOURS" },
-  { "ParameterKey": "LastUpdate", "ParameterValue": "2019-10-16 13:30:04.707 UTC" },
+  { "ParameterKey": "LastUpdate", "ParameterValue": "2019-10-21 20:09:20.564 UTC" },
   { "ParameterKey": "LogRetentionAMILookupAmazonLinux2", "ParameterValue": "30" },
   { "ParameterKey": "LogRetentionAMILookupCustom", "ParameterValue": "30" },
   { "ParameterKey": "LogRetentionEC2LinuxAuthentication", "ParameterValue": "365" },

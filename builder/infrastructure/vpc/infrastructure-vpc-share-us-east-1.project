@@ -10,7 +10,6 @@ Details:
   Owner:                                    David Singer|aws-ops@automatethe.cloud
   DeploymentTimeout:                        35
 
-##-------------------------------------------------------------------------------------------------
 Parameters:
   #-- Stack Reference -------------------------------------------------------------------
   StackReferenceInitialize:                 account-initialize-us-east-1
@@ -31,7 +30,6 @@ Parameters:
   TimezoneLinux:                            America/New_York
   TimezoneWindows:                          Eastern Standard Time
 
-##-------------------------------------------------------------------------------------------------
 Paradigm:
   Templates:
     - VPC/3AZ

@@ -563,7 +563,7 @@ Resources:
             };
             function isBeta(imageName){return imageName.toLowerCase().indexOf('beta') > -1 || imageName.toLowerCase().indexOf('.rc') > -1;}
       Role: !GetAtt "IAMRoleLambdaFunctionAMILookupAmazonLinux2.Arn"
-      Runtime: "nodejs8.10"
+      Runtime: "nodejs10.x"
       MemorySize: "128"
       Timeout: "180"
 
@@ -617,7 +617,7 @@ Resources:
             };
             function isDevelopment(imageName){return imageName.toLowerCase().indexOf('beta') > -1 || imageName.toLowerCase().indexOf('.rc') > -1;}
       Role: !GetAtt "IAMRoleLambdaFunctionAMILookupCustom.Arn"
-      Runtime: "nodejs8.10"
+      Runtime: "nodejs10.x"
       MemorySize: "128"
       Timeout: "180"
 
@@ -669,7 +669,7 @@ Resources:
               }
             };
       Role: !GetAtt "IAMRoleLambdaFunctionNetworkLBIpAddress.Arn"
-      Runtime: "nodejs8.10"
+      Runtime: "nodejs10.x"
       MemorySize: "128"
       Timeout: "180"
 
@@ -715,7 +715,7 @@ Resources:
               }
             };
       Role: !GetAtt "IAMRoleLambdaFunctionStackReference.Arn"
-      Runtime: "nodejs8.10"
+      Runtime: "nodejs10.x"
       MemorySize: "128"
       Timeout: "180"
 
@@ -826,7 +826,7 @@ Resources:
               }
             };
       Role: !GetAtt "IAMRoleLambdaFunctionVPCSubnetCIDR.Arn"
-      Runtime: "nodejs8.10"
+      Runtime: "nodejs10.x"
       MemorySize: "128"
       Timeout: "180"
 

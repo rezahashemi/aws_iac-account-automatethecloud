@@ -3,7 +3,7 @@
   { "ParameterKey": "AllowUsersToChangePassword", "ParameterValue": "true" },
   { "ParameterKey": "Function", "ParameterValue": "Initialize Global|initialize-global" },
   { "ParameterKey": "HardExpiry", "ParameterValue": "false" },
-  { "ParameterKey": "LastUpdate", "ParameterValue": "2019-10-16 13:29:40.389 UTC" },
+  { "ParameterKey": "LastUpdate", "ParameterValue": "2019-10-21 20:09:04.610 UTC" },
   { "ParameterKey": "LogRetentionCloudTrail", "ParameterValue": "365" },
   { "ParameterKey": "MaxPasswordAge", "ParameterValue": "90" },
   { "ParameterKey": "MinimumPasswordLength", "ParameterValue": "14" },
